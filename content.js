@@ -3,7 +3,7 @@ function addOpportunityInProfile() {
     "div.mt1.inline-flex.align-items-center.ember-view"
   );
 
-  if (element != null) {
+  if (element) {
     const connectionType = document.querySelector(
       "ul.pv-top-card--list.inline-flex.align-items-center > li.pv-top-card__distance-badge.inline-block.v-align-text-bottom.t-16.t-black--light.t-normal > span > span.dist-value"
     );
@@ -40,7 +40,7 @@ function addOpportunityInProfile() {
         // Add button inside element
         element.appendChild(button);
       }
-    } else if (opportunityButton != null) {
+    } else if (opportunityButton) {
       opportunityButton.parentElement.removeChild(opportunityButton);
     }
   }
@@ -108,13 +108,27 @@ function addOpportunityInMessaging() {
     "msg-conversations-container__convo-item-link.pl3 > " +
     "div.msg-conversation-card__content--selectable";
 
+  const groupChatTemplate =
+    "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
+    ".msg-conversations-container__pillar.ember-view:nth-of-type({{index}}) > " +
+    "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
+    "a.ember-view.msg-conversation-listitem__link.msg-conversations-container__convo-item-link.pl3 > " +
+    "div.msg-selectable-entity.msg-selectable-entity--4 > " +
+    "div.msg-facepile-grid.msg-facepile-grid--group-size-2.msg-facepile-grid--4.msg-selectable-entity__entity";
+
   for (let i = 1; i <= totalChats; i++) {
+    // Check if element is group chat
+    const groupChatElement = document.querySelector(
+      groupChatTemplate.replace("{{index}}", i.toString())
+    );
+    if (groupChatElement) continue;
+
     // Fetch element where button will be added
     const element = document.querySelector(
       elementTemplate.replace("{{index}}", i.toString())
     );
 
-    if (element != null) {
+    if (element) {
       // Change element style
       element.style["height"] = "112px";
       element.style["padding"] = "12px 8px 35px 12px";
