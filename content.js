@@ -1,22 +1,37 @@
 function addOpportunityInProfile() {
   const element = document.querySelector(
-    "div.mt1.inline-flex.align-items-center.ember-view"
+    "div.mt1.inline-flex.align-items-center.ember-view" +
+      ", " +
+      "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center"
   );
 
   if (element) {
     const connectionType = document.querySelector(
-      "ul.pv-top-card--list.inline-flex.align-items-center > li.pv-top-card__distance-badge.inline-block.v-align-text-bottom.t-16.t-black--light.t-normal > span > span.dist-value"
+      "ul.pv-top-card--list.inline-flex.align-items-center > " +
+        "li.pv-top-card__distance-badge.inline-block.v-align-text-bottom.t-16.t-black--light.t-normal > " +
+        "span > span.dist-value" +
+        ", " +
+        "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > " +
+        "dt.flex.align-items-center > ul > li > span.label-16dp.block"
     );
 
-    if (connectionType.textContent.includes("1st")) {
+    if (connectionType.textContent.trim().includes("1st")) {
       const opportunityButton = document.querySelector(
-        "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile"
+        "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile" +
+          ", " +
+          "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center > #opportunity-button-profile"
       );
       if (opportunityButton == null) {
         // Fetch public identifire of particular user
-        const profileUrl = document
-          .querySelector('a[data-control-name="contact_see_more"]')
-          .getAttribute("href");
+        let profileUrl = document.querySelector(
+          'a[data-control-name="contact_see_more"]'
+        );
+
+        if (profileUrl) {
+          profileUrl = profileUrl.getAttribute("href");
+        } else {
+          profileUrl = fetchProfileUrlSalesNavigator();
+        }
 
         const profileUrlParts = profileUrl.split("/");
         const publicIdentifire =
@@ -180,17 +195,25 @@ function addOpportunityInMessaging() {
   }
 }
 
-function fetchPublicIdentifier() {
+function fetchProfileUrlSalesNavigator() {
   const elements = document.querySelectorAll('code[style="display: none"]');
   for (let i = 0; i < elements.length; i++) {
     const content = JSON.parse(elements[i].textContent);
-    if (content.included) {
-      const includedContent = content.included;
-      for (let i = 0; i < includedContent.length; i++) {
-        if (includedContent[i].publicIdentifier) {
-          return includedContent[i].publicIdentifier;
-        }
-      }
+    if (content.flagshipProfileUrl) {
+      return content.flagshipProfileUrl;
+    }
+  }
+}
+
+function fetchPublicIdentifierLinkedin() {
+  const elements = document.querySelectorAll('code[style="display: none"]');
+  for (let i = 0; i < elements.length; i++) {
+    const content = JSON.parse(elements[i].textContent);
+    if (!content.included) continue;
+    const includedContent = content.included;
+    for (let i = 0; i < includedContent.length; i++) {
+      if (!includedContent[i].publicIdentifier) continue;
+      return includedContent[i].publicIdentifier;
     }
   }
 }
@@ -204,7 +227,7 @@ function fetchPublicIdentifier() {
     addOpportunityInMessaging();
     chrome.storage.sync.get("linkedInId", function (data) {
       if ("linkedInId" in data) {
-        const publicIdentifier = fetchPublicIdentifier();
+        const publicIdentifier = fetchPublicIdentifierLinkedin();
         chrome.storage.sync.set(
           { publicIdentifier: publicIdentifier },
           function () {

@@ -7,7 +7,11 @@
     });
 
     setInterval(() => {
-      chrome.tabs.executeScript(tabId, { file: "content.js" });
+      chrome.tabs.executeScript(
+        tabId,
+        { file: "content.js" },
+        (_) => chrome.runtime.lastError
+      );
     }, 1000);
     console.log("BACKGROUND SCRIPT RUNNING!!!");
 
