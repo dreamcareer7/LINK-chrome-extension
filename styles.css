@@ -1,0 +1,40 @@
+#opportunity-button-profile {
+  color: rgb(255, 255, 255);
+  font-size: 15px;
+  background-color: #0a66c2;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  margin-left: 1rem;
+  text-align: center;
+  width: 100px;
+  height: 31px;
+  vertical-align: middle;
+}
+
+#opportunity-button-connection {
+  color: rgb(255, 255, 255);
+  font-size: 15px;
+  background-color: #0a66c2;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  margin-left: 0rem;
+  margin-right: 1rem;
+  text-align: center;
+  width: 100px;
+  height: 32px;
+  vertical-align: middle;
+}
+
+#opportunity-button-messaging {
+  color: rgb(255, 255, 255);
+  font-size: 15px;
+  background-color: #0a66c2;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  margin-left: 0rem;
+  text-align: center;
+  width: 100px;
+  height: 30px;
+  display: block;
+  margin: 0 auto;
+}
