@@ -121,6 +121,8 @@ function addOpportunityInMessaging() {
     const groupChatElement = document.querySelector(
       groupChatTemplate.replace("{{index}}", i.toString())
     );
+
+    // Skip element if it is group chat
     if (groupChatElement) continue;
 
     // Fetch element where button will be added
@@ -128,52 +130,53 @@ function addOpportunityInMessaging() {
       elementTemplate.replace("{{index}}", i.toString())
     );
 
-    if (element) {
-      // Change element style
-      element.style["height"] = "112px";
-      element.style["padding"] = "12px 8px 35px 12px";
+    // Skip if element not found
+    if (!element) continue;
 
-      const opportunityButton = document.querySelector(
-        elementTemplate.replace("{{index}}", i.toString()) +
-          " > #opportunity-button-messaging"
-      );
+    // Change element style
+    element.style["height"] = "112px";
+    element.style["padding"] = "12px 8px 35px 12px";
 
-      // Check if Opportunity button already exists
-      if (opportunityButton == null) {
-        // Fetch conversation id
-        const chatElement = document
-          .querySelector(
-            "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
-              `.msg-conversations-container__pillar.ember-view:nth-of-type(${i.toString()}) > ` +
-              "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
-              "a.ember-view.msg-conversation-listitem__link." +
-              "msg-conversations-container__convo-item-link.pl3"
-          )
-          .getAttribute("href");
+    const opportunityButton = document.querySelector(
+      elementTemplate.replace("{{index}}", i.toString()) +
+        " > #opportunity-button-messaging"
+    );
 
-        const chatElementParts = chatElement.split("/");
-        const conversationId =
-          chatElementParts[chatElementParts.indexOf("thread") + 1];
+    // Skip if opportunity button already exists
+    if (opportunityButton) continue;
 
-        // Create "Opportunity" button to place
-        const button = document.createElement("button");
-        const text = document.createTextNode("Opportunity");
-        button.appendChild(text);
-        button.id = "opportunity-button-messaging";
+    // Fetch conversation id
+    const chatElement = document
+      .querySelector(
+        "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
+          `.msg-conversations-container__pillar.ember-view:nth-of-type(${i.toString()}) > ` +
+          "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
+          "a.ember-view.msg-conversation-listitem__link." +
+          "msg-conversations-container__convo-item-link.pl3"
+      )
+      .getAttribute("href");
 
-        // Add onClick event function for "Opportunity" button
-        button.onclick = async function onClickUpdateButton() {
-          // console.log("getting here");
-          // const data = await localStorage.getItem("jSessionId");
-          // console.log(window.location);
-          // console.log(JSON.stringify(document.cookie));
-          console.log(conversationId);
-        };
+    const chatElementParts = chatElement.split("/");
+    const conversationId =
+      chatElementParts[chatElementParts.indexOf("thread") + 1];
 
-        // Add button inside element
-        element.appendChild(button);
-      }
-    }
+    // Create "Opportunity" button to place
+    const button = document.createElement("button");
+    const text = document.createTextNode("Opportunity");
+    button.appendChild(text);
+    button.id = "opportunity-button-messaging";
+
+    // Add onClick event function for "Opportunity" button
+    button.onclick = async function onClickUpdateButton() {
+      // console.log("getting here");
+      // const data = await localStorage.getItem("jSessionId");
+      // console.log(window.location);
+      // console.log(JSON.stringify(document.cookie));
+      console.log(conversationId);
+    };
+
+    // Add button inside element
+    element.appendChild(button);
   }
 }
 
