@@ -6,13 +6,17 @@
       tabId = tab.tabId;
     });
 
-    setInterval(() => {
-      chrome.tabs.executeScript(
-        tabId,
-        { file: "content.js" },
-        (_) => chrome.runtime.lastError
-      );
-    }, 1000);
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    async function runContentScript() {
+      chrome.tabs.executeScript(tabId, { file: "content.js" }, async (_) => {
+        chrome.runtime.lastError;
+        await sleep(1000);
+        return runContentScript();
+      });
+    }
+    runContentScript();
+
     console.log("BACKGROUND SCRIPT RUNNING!!!");
 
     chrome.webNavigation.onCommitted.addListener(function () {
@@ -20,7 +24,6 @@
     });
 
     chrome.webNavigation.onCompleted.addListener(function () {
-      // chrome.tabs.executeScript(tabId, { file: "content.js" });
       chrome.tabs.get(tabId, async function (tab) {
         if (tab.url) {
           await checkForLinkedIn(tab);

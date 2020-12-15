@@ -1,4 +1,4 @@
-function addOpportunityInProfile() {
+async function addOpportunityInProfile() {
   const element = document.querySelector(
     "div.mt1.inline-flex.align-items-center.ember-view" +
       ", " +
@@ -21,7 +21,7 @@ function addOpportunityInProfile() {
           ", " +
           "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center > #opportunity-button-profile"
       );
-      if (opportunityButton == null) {
+      if (!opportunityButton) {
         // Fetch public identifire of particular user
         let profileUrl = document.querySelector(
           'a[data-control-name="contact_see_more"]'
@@ -30,30 +30,37 @@ function addOpportunityInProfile() {
         if (profileUrl) {
           profileUrl = profileUrl.getAttribute("href");
         } else {
-          profileUrl = fetchProfileUrlSalesNavigator();
+          profileUrl = await fetchProfileUrlSalesNavigator();
         }
 
         const profileUrlParts = profileUrl.split("/");
         const publicIdentifire =
           profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
-        // Create "Opportunity" button to place
-        const button = document.createElement("button");
-        const text = document.createTextNode("Opportunity");
-        button.appendChild(text);
-        button.id = "opportunity-button-profile";
+        const opportunityButton = document.querySelector(
+          "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile" +
+            ", " +
+            "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center > #opportunity-button-profile"
+        );
+        if (!opportunityButton) {
+          // Create "Opportunity" button to place
+          const button = document.createElement("button");
+          const text = document.createTextNode("Opportunity");
+          button.appendChild(text);
+          button.id = "opportunity-button-profile";
 
-        // Add onClick event function for "Opportunity" button
-        button.onclick = async function onClickUpdateButton() {
-          // console.log("getting here");
-          // const data = await localStorage.getItem("jSessionId");
-          // console.log(window.location);
-          // console.log(JSON.stringify(document.cookie));
-          console.log(publicIdentifire);
-        };
+          // Add onClick event function for "Opportunity" button
+          button.onclick = async function onClickUpdateButton() {
+            // console.log("getting here");
+            // const data = await localStorage.getItem("jSessionId");
+            // console.log(window.location);
+            // console.log(JSON.stringify(document.cookie));
+            console.log(publicIdentifire);
+          };
 
-        // Add button inside element
-        element.appendChild(button);
+          // Add button inside element
+          element.appendChild(button);
+        }
       }
     } else if (opportunityButton) {
       opportunityButton.parentElement.removeChild(opportunityButton);
@@ -195,14 +202,49 @@ function addOpportunityInMessaging() {
   }
 }
 
-function fetchProfileUrlSalesNavigator() {
-  const elements = document.querySelectorAll('code[style="display: none"]');
-  for (let i = 0; i < elements.length; i++) {
-    const content = JSON.parse(elements[i].textContent);
-    if (content.flagshipProfileUrl) {
-      return content.flagshipProfileUrl;
-    }
-  }
+async function fetchProfileUrlSalesNavigator() {
+  var xhr = new XMLHttpRequest();
+  xhr.withCredentials = true;
+
+  return await new Promise(async function (resolve) {
+    xhr.addEventListener("readystatechange", function () {
+      if (this.readyState === 4) {
+        resolve(JSON.parse(this.responseText).flagshipProfileUrl);
+      }
+    });
+    urlParts = document.URL.split("/");
+    searchData = urlParts[urlParts.indexOf("people") + 1].split('?')[0].split(",");
+    const url =
+      "https://www.linkedin.com/sales-api/salesApiProfiles/(" +
+      `profileId:${searchData[0]},` +
+      `authType:${searchData[1]},` +
+      `authToken:${searchData[2]}` +
+      ")?decoration=%28entityUrn%2CobjectUrn%2CpictureInfo%2CprofilePictureDisplayImage%2CfirstName%2ClastName%2CfullName%2Ccolleague%2Cheadline%2CmemberBadges%2Cdegree%2CprofileUnlockInfo%2Clocation%2ClistCount%2Cindustry%2CnumOfConnections%2CinmailRestriction%2CsavedLead%2CdefaultPosition%2CcontactInfo%2Csummary%2CcrmStatus%2CpendingInvitation%2Cunlocked%2CrelatedColleagueCompanyId%2CnumOfSharedConnections%2CshowTotalConnectionsPage%2CconnectedTime%2CnoteCount%2CflagshipProfileUrl%2Cmemorialized%2Cpositions*%2Ceducations*%29";
+    xhr.open("GET", url);
+    xhr.setRequestHeader("authority", "www.linkedin.com");
+    xhr.setRequestHeader("x-li-lang", "en_US");
+    xhr.setRequestHeader(
+      "x-li-identity",
+      "dXJuOmxpOmVudGVycHJpc2VQcm9maWxlOih1cm46bGk6ZW50ZXJwcmlzZUFjY291bnQ6ODY0MjAwNTcsMTEyOTE1NDc3KQ"
+    );
+    xhr.setRequestHeader(
+      "x-li-page-instance",
+      "urn:li:page:d_sales2_profile;ld3Dc2I3Q6O3Md395JswLg=="
+    );
+    xhr.setRequestHeader("content-type", "application/json");
+    xhr.setRequestHeader("accept", "application/json, */*; q=0.01");
+    xhr.setRequestHeader("x-restli-protocol-version", "2.0.0");
+    xhr.setRequestHeader("x-requested-with", "XMLHttpRequest");
+    xhr.setRequestHeader("accept-language", "en-US,en;q=0.9");
+    await new Promise((resolveJSessionId) => {
+      chrome.storage.sync.get("jSessionId", function (data) {
+        const jSessionId = data.jSessionId.replace(/"/g, "");
+        xhr.setRequestHeader("csrf-token", jSessionId);
+        resolveJSessionId();
+      });
+    });
+    xhr.send();
+  });
 }
 
 function fetchPublicIdentifierLinkedin() {
@@ -218,10 +260,9 @@ function fetchPublicIdentifierLinkedin() {
   }
 }
 
-(function () {
+(async function () {
   pageLink = document.URL;
   if (pageLink.includes(".linkedin.com/")) {
-    console.log("RUNNING SCRIPT!!!");
     addOpportunityInProfile();
     addOpportunityInConnection();
     addOpportunityInMessaging();
