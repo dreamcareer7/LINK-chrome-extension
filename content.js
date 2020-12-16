@@ -1,3 +1,112 @@
+/**
+ * Function for putting static delay
+ * @param {int} milliseconds Time duration in milliseconds
+ */
+function sleep(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+/**
+ * Function to make XHL Http Request
+ * @param {string} method Method of request
+ * @param {string} url url of request
+ * @param {object} data Data of request
+ * @param {object} headers headers of request
+ */
+async function request(method, url, headers = {}, data = {}) {
+  return await new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+
+    // Add event handler for request
+    xhr.addEventListener("readystatechange", function () {
+      if (this.readyState === 4) {
+        resolve(this.responseText);
+      }
+    });
+
+    // Open url
+    xhr.open(method, url);
+
+    // Set all headers
+    for (const header_key in headers) {
+      xhr.setRequestHeader(header_key, headers[header_key]);
+    }
+
+    // Set data
+    const data = new FormData();
+    for (const data_key in data) {
+      data.append(data_key, data[data_key]);
+    }
+
+    // Send request and wait for response
+    xhr.send(data);
+  });
+}
+
+async function fetchProfileUrlSalesNavigator() {
+  // Create request url
+  urlParts = document.URL.split("/");
+
+  searchData = urlParts[urlParts.indexOf("people") + 1]
+    .split("?")[0]
+    .split(",");
+
+  const url =
+    "https://www.linkedin.com/sales-api/salesApiProfiles/(" +
+    `profileId:${searchData[0]},` +
+    `authType:${searchData[1]},` +
+    `authToken:${searchData[2]}` +
+    ")?decoration=%28entityUrn%2CobjectUrn%2CpictureInfo%2CprofilePictureDisplayImage%2CfirstName%2C" +
+    "lastName%2CfullName%2Ccolleague%2Cheadline%2CmemberBadges%2Cdegree%2CprofileUnlockInfo%2C" +
+    "location%2ClistCount%2Cindustry%2CnumOfConnections%2CinmailRestriction%2CsavedLead%2C" +
+    "defaultPosition%2CcontactInfo%2Csummary%2CcrmStatus%2CpendingInvitation%2Cunlocked%2C" +
+    "relatedColleagueCompanyId%2CnumOfSharedConnections%2CshowTotalConnectionsPage%2CconnectedTime%2C" +
+    "noteCount%2CflagshipProfileUrl%2Cmemorialized%2Cpositions*%2Ceducations*%29";
+
+  // Fetch required parameter from chrome storage
+  await new Promise((resolveJSessionId) => {
+    chrome.storage.sync.get("jSessionId", function (data) {
+      const jSessionId = data.jSessionId.replace(/"/g, "");
+      resolveJSessionId();
+    });
+  });
+
+  // Create headers parameters
+  const headers = {
+    authority: "www.linkedin.com",
+    accept: "application/json, */*; q=0.01",
+    "x-li-lang": "en_US",
+    "x-li-identity":
+      "dXJuOmxpOmVudGVycHJpc2VQcm9maWxlOih1cm46bGk6ZW50ZXJwcmlzZUFjY291bnQ6ODY0MjAwNTcsMTEyOTE1NDc3KQ",
+    "x-li-page-instance":
+      "urn:li:page:d_sales2_profile;ld3Dc2I3Q6O3Md395JswLg==",
+    "content-type": "application/json",
+    "x-restli-protocol-version": "2.0.0",
+    "x-requested-with": "XMLHttpRequest",
+    "accept-language": "en-US,en;q=0.9",
+    "csrf-token": jSessionId,
+  };
+
+  // Send request and return linkedin profile url
+  return JSON.parse(
+    await request((method = "GET"), (url = url), (headers = headers))
+  ).flagshipProfileUrl;
+}
+
+function fetchPublicIdentifierLinkedin() {
+  const elements = document.querySelectorAll('code[style="display: none"]');
+  for (let i = 0; i < elements.length; i++) {
+    const content = JSON.parse(elements[i].textContent);
+    if (!content.included) continue;
+    const includedContent = content.included;
+    for (let i = 0; i < includedContent.length; i++) {
+      if (!includedContent[i].publicIdentifier) continue;
+      return includedContent[i].publicIdentifier;
+    }
+  }
+}
+
 async function addOpportunityInProfile() {
   const element = document.querySelector(
     "div.mt1.inline-flex.align-items-center.ember-view" +
@@ -167,20 +276,20 @@ function addOpportunityInMessaging() {
     // Skip if opportunity button already exists
     if (opportunityButton) continue;
 
-    // Fetch conversation id
-    const chatElement = document
-      .querySelector(
-        "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
-          `.msg-conversations-container__pillar.ember-view:nth-of-type(${i.toString()}) > ` +
-          "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
-          "a.ember-view.msg-conversation-listitem__link." +
-          "msg-conversations-container__convo-item-link.pl3"
-      )
-      .getAttribute("href");
+    // // Fetch conversation id
+    // const chatElement = document
+    //   .querySelector(
+    //     "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
+    //       `.msg-conversations-container__pillar.ember-view:nth-of-type(${i.toString()}) > ` +
+    //       "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
+    //       "a.ember-view.msg-conversation-listitem__link." +
+    //       "msg-conversations-container__convo-item-link.pl3"
+    //   )
+    //   .getAttribute("href");
 
-    const chatElementParts = chatElement.split("/");
-    const conversationId =
-      chatElementParts[chatElementParts.indexOf("thread") + 1];
+    // const chatElementParts = chatElement.split("/");
+    // const conversationId =
+    //   chatElementParts[chatElementParts.indexOf("thread") + 1];
 
     // Create "Opportunity" button to place
     const button = document.createElement("button");
@@ -190,73 +299,19 @@ function addOpportunityInMessaging() {
 
     // Add onClick event function for "Opportunity" button
     button.onclick = async function onClickUpdateButton() {
-      // console.log("getting here");
-      // const data = await localStorage.getItem("jSessionId");
-      // console.log(window.location);
-      // console.log(JSON.stringify(document.cookie));
-      console.log(conversationId);
+      //Fetch public identifier
+      await sleep(1000);
+      const publicUrl = document
+        .querySelector('a[data-control-name="topcard"]')
+        .getAttribute("href")
+        .split("/");
+      const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
+
+      console.log(publicIdentifier);
     };
 
     // Add button inside element
     element.appendChild(button);
-  }
-}
-
-async function fetchProfileUrlSalesNavigator() {
-  var xhr = new XMLHttpRequest();
-  xhr.withCredentials = true;
-
-  return await new Promise(async function (resolve) {
-    xhr.addEventListener("readystatechange", function () {
-      if (this.readyState === 4) {
-        resolve(JSON.parse(this.responseText).flagshipProfileUrl);
-      }
-    });
-    urlParts = document.URL.split("/");
-    searchData = urlParts[urlParts.indexOf("people") + 1].split('?')[0].split(",");
-    const url =
-      "https://www.linkedin.com/sales-api/salesApiProfiles/(" +
-      `profileId:${searchData[0]},` +
-      `authType:${searchData[1]},` +
-      `authToken:${searchData[2]}` +
-      ")?decoration=%28entityUrn%2CobjectUrn%2CpictureInfo%2CprofilePictureDisplayImage%2CfirstName%2ClastName%2CfullName%2Ccolleague%2Cheadline%2CmemberBadges%2Cdegree%2CprofileUnlockInfo%2Clocation%2ClistCount%2Cindustry%2CnumOfConnections%2CinmailRestriction%2CsavedLead%2CdefaultPosition%2CcontactInfo%2Csummary%2CcrmStatus%2CpendingInvitation%2Cunlocked%2CrelatedColleagueCompanyId%2CnumOfSharedConnections%2CshowTotalConnectionsPage%2CconnectedTime%2CnoteCount%2CflagshipProfileUrl%2Cmemorialized%2Cpositions*%2Ceducations*%29";
-    xhr.open("GET", url);
-    xhr.setRequestHeader("authority", "www.linkedin.com");
-    xhr.setRequestHeader("x-li-lang", "en_US");
-    xhr.setRequestHeader(
-      "x-li-identity",
-      "dXJuOmxpOmVudGVycHJpc2VQcm9maWxlOih1cm46bGk6ZW50ZXJwcmlzZUFjY291bnQ6ODY0MjAwNTcsMTEyOTE1NDc3KQ"
-    );
-    xhr.setRequestHeader(
-      "x-li-page-instance",
-      "urn:li:page:d_sales2_profile;ld3Dc2I3Q6O3Md395JswLg=="
-    );
-    xhr.setRequestHeader("content-type", "application/json");
-    xhr.setRequestHeader("accept", "application/json, */*; q=0.01");
-    xhr.setRequestHeader("x-restli-protocol-version", "2.0.0");
-    xhr.setRequestHeader("x-requested-with", "XMLHttpRequest");
-    xhr.setRequestHeader("accept-language", "en-US,en;q=0.9");
-    await new Promise((resolveJSessionId) => {
-      chrome.storage.sync.get("jSessionId", function (data) {
-        const jSessionId = data.jSessionId.replace(/"/g, "");
-        xhr.setRequestHeader("csrf-token", jSessionId);
-        resolveJSessionId();
-      });
-    });
-    xhr.send();
-  });
-}
-
-function fetchPublicIdentifierLinkedin() {
-  const elements = document.querySelectorAll('code[style="display: none"]');
-  for (let i = 0; i < elements.length; i++) {
-    const content = JSON.parse(elements[i].textContent);
-    if (!content.included) continue;
-    const includedContent = content.included;
-    for (let i = 0; i < includedContent.length; i++) {
-      if (!includedContent[i].publicIdentifier) continue;
-      return includedContent[i].publicIdentifier;
-    }
   }
 }
 

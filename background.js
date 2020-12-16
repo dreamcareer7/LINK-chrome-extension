@@ -22,7 +22,7 @@
     chrome.webNavigation.onCommitted.addListener(function () {
       // chrome.tabs.executeScript(tabId, { file: "content.js" });
     });
-
+    
     chrome.webNavigation.onCompleted.addListener(function () {
       chrome.tabs.get(tabId, async function (tab) {
         if (tab.url) {
