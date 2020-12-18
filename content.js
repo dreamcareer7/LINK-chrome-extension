@@ -1,9 +1,11 @@
 //region UTILITIES
+let serverUrl = "http://127.0.0.1:3200"
+
 /**
  * Function for putting static delay
  * @param {int} milliseconds Time duration in milliseconds
  */
-var sleep = function (milliseconds) {
+const sleep = function (milliseconds) {
     return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
 
@@ -14,7 +16,7 @@ var sleep = function (milliseconds) {
  * @param {object} data Data of request
  * @param {object} headers headers of request
  */
-var request = async function (method, url, headers = {}, data = {}) {
+const request = async function (method, url, headers = {}, data = {}) {
     return await new Promise((resolve) => {
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
@@ -61,22 +63,37 @@ async function getValueFromStorage(keyName = null) {
     })
 }
 
+//endregion
+
 /**
  * Function for add opportunity
  * @param {object} opportunityData details of opportunity
  */
 async function addOpportunity(opportunityData) {
-    const requestUrl = config.serverUrl + '/opportunity/add-opportunity'
+    const requestUrl = serverUrl + '/opportunity/add-opportunity'
+    console.log(requestUrl)
 
     const requestData = {
-        "publicIdentifier": getValueFromStorage("publicIdentifier"),
-        "opportunityPublicIdentifier": opportunityData["publicIdentifier"]
+        "publicIdentifier": opportunityData["publicIdentifier"],
+        "authorization": getValueFromStorage("token")
     }
 
     await request(method = "POST", url = requestUrl, data = requestData)
 }
 
-//endregion
+
+function fetchPublicIdentifierLinkedin() {
+    const elements = document.querySelectorAll('code[style="display: none"]');
+    for (let i = 0; i < elements.length; i++) {
+        const content = JSON.parse(elements[i].textContent);
+        if (!content.included) continue;
+        const includedContent = content.included;
+        for (let i = 0; i < includedContent.length; i++) {
+            if (!includedContent[i].publicIdentifier) continue;
+            return includedContent[i].publicIdentifier;
+        }
+    }
+}
 
 async function fetchProfileUrlSalesNavigator() {
     // Create request url
@@ -123,19 +140,6 @@ async function fetchProfileUrlSalesNavigator() {
 
     // Send request and return linkedin profile url
     return JSON.parse(await request(method = "GET", url = requestUrl, headers = requestHeaders));
-}
-
-function fetchPublicIdentifierLinkedin() {
-    const elements = document.querySelectorAll('code[style="display: none"]');
-    for (let i = 0; i < elements.length; i++) {
-        const content = JSON.parse(elements[i].textContent);
-        if (!content.included) continue;
-        const includedContent = content.included;
-        for (let i = 0; i < includedContent.length; i++) {
-            if (!includedContent[i].publicIdentifier) continue;
-            return includedContent[i].publicIdentifier;
-        }
-    }
 }
 
 async function addOpportunityButtonInProfile() {
@@ -201,9 +205,12 @@ async function addOpportunityButtonInProfile() {
                         button.style["background-color"] = '#d3d3d3';
                         await sleep(300)
                         console.log(publicIdentifier);
+
+                        await addOpportunity({publicIdentifier: publicIdentifier})
+
                         button.textContent = "Update";
                         button.disabled = false
-                        button.style["background-color"] = oldBGColor
+                        button.style["background-color"] = "#88E000"
                     };
 
                     // Add button inside element
@@ -257,9 +264,12 @@ function addOpportunityButtonInConnection() {
                 button.style["background-color"] = '#d3d3d3';
                 await sleep(300)
                 console.log(publicIdentifier);
+
+                await addOpportunity({publicIdentifier: publicIdentifier})
+
                 button.textContent = "Update";
                 button.disabled = false
-                button.style["background-color"] = oldBGColor
+                button.style["background-color"] = "#88E000"
             };
 
             // Add button inside element
@@ -356,9 +366,12 @@ function addOpportunityButtonInMessaging() {
             const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
 
             console.log(publicIdentifier);
+
+            await addOpportunity({publicIdentifier: publicIdentifier})
+
             button.textContent = "Update";
             button.disabled = false
-            button.style["background-color"] = oldBGColor
+            button.style["background-color"] = "#88E000"
 
         };
 
