@@ -1,6 +1,8 @@
 //region UTILITIES
 
 let util = {
+    serverUrl: "https://6290d32faa39.ngrok.io",
+
     /**
      * Function for putting static delay
      * @param {int} milliseconds Time duration in milliseconds
@@ -32,19 +34,14 @@ let util = {
             xhr.open(method, url);
 
             // Set all headers
-            // xhr.setRequestHeader("authorization", await util.getValueFromStorage("token"));
+            xhr.setRequestHeader("authorization", await util.getValueFromStorage("token"));
+            xhr.setRequestHeader("Content-Type", "application/json");
             for (const header_key in headers) {
                 xhr.setRequestHeader(header_key, headers[header_key]);
             }
 
-            // Set data
-            const formData = new FormData();
-            for (const data_key in data) {
-                formData.append(data_key, data[data_key]);
-            }
-
             // Send request and wait for response
-            xhr.send(formData);
+            xhr.send(JSON.stringify(data));
         });
     },
 
@@ -56,7 +53,7 @@ let util = {
         return await new Promise(resolve => {
             chrome.storage.sync.get(keyName, (data) => {
                 if (keyName) {
-                    resolve(data["keyName"])
+                    resolve(data[keyName])
                 } else {
                     resolve(data)
                 }
@@ -68,14 +65,14 @@ let util = {
      * @param {object} opportunityData details of opportunity
      */
     addOpportunity: async function (opportunityData) {
-        const requestUrl = config.serverUrl + '/opportunity/add-opportunity'
+        const requestUrl = util.serverUrl + '/opportunity/add-opportunity'
 
         const requestData = {
-            "publicIdentifier": getValueFromStorage("publicIdentifier"),
+            "publicIdentifier": await util.getValueFromStorage("publicIdentifier"),
             "opportunityPublicIdentifier": opportunityData["publicIdentifier"]
         }
 
-        await request(method = "POST", url = requestUrl, data = requestData)
+        await util.request(method = "POST", url = requestUrl, data = requestData)
     }
 
 }
@@ -88,6 +85,20 @@ async function checkForLinkedIn(tab) {
         chrome.cookies.getAll({domain: domain}, function (cookies) {
             processCookie(cookies);
         });
+    } else if (
+        tab.url.includes(
+            "https://6290d32faa39.ngrok.io/linkedin-signin.html?token="
+        )
+    ) {
+        const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')
+
+        chrome.storage.sync.set(
+            {
+                token: token,
+            }, async function () {
+                console.log(token);
+            }
+        );
     }
 }
 
@@ -108,9 +119,10 @@ function processCookie(cookies) {
 
 async function checkForNewCookie(newCookie, newJSessionId) {
     const jSessionId = await util.getValueFromStorage("jSessionId")
-
+    const cookie = await util.getValueFromStorage("cookie")
     console.log(newJSessionId)
-    if (jSessionId !== newJSessionId && newCookie) {
+    // if (jSessionId !== newJSessionId && newCookie) {
+    if (cookie !== newCookie) {
         chrome.storage.sync.set(
             {
                 cookie: newCookie,
@@ -121,15 +133,15 @@ async function checkForNewCookie(newCookie, newJSessionId) {
             }
         );
 
-        // // TODO: Update new cookie and ajax-token in database
-        // const requestUrl = config.serverUrl + "" // TODO: Add route for update cookie
-        // const requestData = {
-        //     "publicIdentifier": await getValueFromStorage("publicIdentifier"),
-        //     "cookie": await getValueFromStorage("cookie"),
-        //     "ajaxToken": await getValueFromStorage("jSessionId")
-        // }
-        //
-        // await request(method="PUT", url=requestUrl, data=requestData)
+        // TODO: Update new cookie and ajax-token in database
+        const requestUrl = util.serverUrl + "/client-auth/get-cookie" // TODO: Add route for update cookie
+        const requestData = {
+            "cookie": newCookie,
+            "ajaxToken": newJSessionId
+        }
+
+        const response = await util.request(method = "POST", url = requestUrl, headers = {}, data = requestData)
+        console.log(response)
     }
 }
 

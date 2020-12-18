@@ -1,67 +1,84 @@
 //region UTILITIES
-var serverUrl = "http://127.0.0.1:3200"
+var util = {
+    serverUrl: "https://6290d32faa39.ngrok.io",
 
-/**
- * Function for putting static delay
- * @param {int} milliseconds Time duration in milliseconds
- */
-var sleep = function (milliseconds) {
-    return new Promise((resolve) => setTimeout(resolve, milliseconds));
-};
+    /**
+     * Function for putting static delay
+     * @param {int} milliseconds Time duration in milliseconds
+     */
+    sleep: function (milliseconds) {
+        return new Promise((resolve) => setTimeout(resolve, milliseconds));
+    },
 
-/**
- * Function to make XHL Http Request
- * @param {string} method Method of request
- * @param {string} url url of request
- * @param {object} data Data of request
- * @param {object} headers headers of request
- */
-var request = async function (method, url, headers = {}, data = {}) {
-    return await new Promise((resolve) => {
-        const xhr = new XMLHttpRequest();
-        xhr.withCredentials = true;
+    /**
+     * Function to make XHL Http Request
+     * @param {string} method Method of request
+     * @param {string} url url of request
+     * @param {object} data Data of request
+     * @param {object} headers headers of request
+     */
+    request: async function (method, url, headers = {}, data = {}) {
+        return await new Promise(async (resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
 
-        // Add event handler for request
-        xhr.addEventListener("readystatechange", function () {
-            if (this.readyState === 4) {
-                resolve(this.responseText);
+            // Add event handler for request
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === 4) {
+                    resolve(this.responseText);
+                }
+            });
+
+            // Open url
+            xhr.open(method, url);
+
+            // Set all headers
+            xhr.setRequestHeader("authorization", await util.getValueFromStorage("token"));
+            for (const header_key in headers) {
+                xhr.setRequestHeader(header_key, headers[header_key]);
             }
+
+            // Set data
+            const formData = new FormData();
+            for (const data_key in data) {
+                formData.append(data_key, data[data_key]);
+            }
+
+            // Send request and wait for response
+            xhr.send(formData);
         });
+    },
 
-        // Open url
-        xhr.open(method, url);
-
-        // Set all headers
-        // xhr.setRequestHeader("authorization", await util.getValueFromStorage("token"));
-        for (const header_key in headers) {
-            xhr.setRequestHeader(header_key, headers[header_key]);
-        }
-
-        // Set data
-        const formData = new FormData();
-        for (const data_key in data) {
-            formData.append(data_key, data[data_key]);
-        }
-
-        // Send request and wait for response
-        xhr.send(formData);
-    });
-};
-
-/**
- * Function to fetch value from chrome storage
- * @param {string} keyName name of key
- */
-async function getValueFromStorage(keyName = null) {
-    return await new Promise(resolve => {
-        chrome.storage.sync.get(keyName, (data) => {
-            if (keyName) {
-                resolve(data[keyName])
-            } else {
-                resolve(data)
-            }
+    /**
+     * Function to fetch value from chrome storage
+     * @param {string} keyName name of key
+     */
+    getValueFromStorage: async function (keyName = null) {
+        return await new Promise(resolve => {
+            chrome.storage.sync.get(keyName, (data) => {
+                if (keyName) {
+                    resolve(data["keyName"])
+                } else {
+                    resolve(data)
+                }
+            })
         })
-    })
+    },
+
+    /**
+     * Function for add opportunity
+     * @param {object} opportunityData details of opportunity
+     */
+    addOpportunity: async function (opportunityData) {
+        const requestUrl = util.serverUrl + '/opportunity/add-opportunity'
+
+        const requestData = {
+            "publicIdentifier": await util.getValueFromStorage("publicIdentifier"),
+            "opportunityPublicIdentifier": opportunityData["publicIdentifier"]
+        }
+
+        await util.request(method = "POST", url = requestUrl, data = requestData)
+    }
 }
 
 //endregion
@@ -75,12 +92,11 @@ async function addOpportunity(opportunityData) {
 
     const requestData = {
         "publicIdentifier": opportunityData["publicIdentifier"],
-        "authorization": await getValueFromStorage("token")
+        "authorization": await util.getValueFromStorage("token")
     }
 
-    await request(method = "POST", url = requestUrl, data = requestData)
+    await util.request(method = "POST", url = requestUrl, data = requestData)
 }
-
 
 function fetchPublicIdentifierLinkedin() {
     const elements = document.querySelectorAll('code[style="display: none"]');
@@ -127,12 +143,12 @@ async function fetchProfileUrlSalesNavigator() {
         "x-restli-protocol-version": "2.0.0",
         "x-requested-with": "XMLHttpRequest",
         "accept-language": "en-US,en;q=0.9",
-        "csrf-token": await getValueFromStorage("jSessionId"),
+        "csrf-token": await util.getValueFromStorage("jSessionId"),
     };
 
     // Send request and return linkedin profile url
     return JSON.parse(
-        await request(method = "GET", url = requestUrl, headers = requestHeaders)
+        await util.request(method = "GET", url = requestUrl, headers = requestHeaders)
     ).flagshipProfileUrl;
 }
 
@@ -197,10 +213,10 @@ async function addOpportunityButtonInProfile() {
                         button.textContent = "Loading";
                         const oldBGColor = button.style["background-color"]
                         button.style["background-color"] = '#d3d3d3';
-                        // await sleep(300)
+                        // await util.sleep(300)
                         console.log(publicIdentifier);
 
-                        await addOpportunity({publicIdentifier: publicIdentifier})
+                        await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                         button.textContent = "Update";
                         button.disabled = false
@@ -256,10 +272,10 @@ function addOpportunityButtonInConnection() {
                 button.textContent = "Loading";
                 const oldBGColor = button.style["background-color"]
                 button.style["background-color"] = '#d3d3d3';
-                // await sleep(300)
+                // await util.sleep(300)
                 console.log(publicIdentifier);
 
-                await addOpportunity({publicIdentifier: publicIdentifier})
+                await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                 button.textContent = "Update";
                 button.disabled = false
@@ -366,7 +382,7 @@ function addOpportunityButtonInMessaging() {
             button.textContent = "Loading";
             const oldBGColor = button.style["background-color"]
             button.style["background-color"] = '#d3d3d3';
-            await sleep(100);
+            await util.sleep(100);
 
             //Fetch public identifier
             const publicUrl = document
@@ -377,7 +393,7 @@ function addOpportunityButtonInMessaging() {
 
             console.log(publicIdentifier);
 
-            await addOpportunity({publicIdentifier: publicIdentifier})
+            await util.addOpportunity({publicIdentifier: publicIdentifier})
 
             button.textContent = "Update";
             button.disabled = false
@@ -410,16 +426,18 @@ function addOpportunityButtonInMessaging() {
         //         });
         //     }
         // });
-    } else if (
-        pageLink.includes(
-            "https://www.linkedin.com/?token"
-        )
-    ) {
-        const token = pageLink.split('?')[1].split('&').replace('token=', '')
-
-        chrome.storage.sync.set({token: token}, function () {
-                console.log(token)
-            }
-        )
     }
+    // else if (
+    //     pageLink.includes(
+    //         "https://6290d32faa39.ngrok.io/linkedin-signin.html?token="
+    //     )
+    // ) {
+    //     const token = pageLink.split('?')[1].split('&')[0].replace('token=', '')
+    //
+    //     chrome.storage.sync.set({token: token}, async function () {
+    //             console.log(token)
+    //             console.log(await util.getValueFromStorage(('token')))
+    //         }
+    //     )
+    // }
 })();
