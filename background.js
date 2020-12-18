@@ -1,6 +1,6 @@
 //region UTILITIES
 
-let background = {
+let util = {
     /**
      * Function for putting static delay
      * @param {int} milliseconds Time duration in milliseconds
@@ -17,7 +17,7 @@ let background = {
      * @param {object} headers headers of request
      */
     request: async function (method, url, headers = {}, data = {}) {
-        return await new Promise((resolve) => {
+        return await new Promise(async (resolve) => {
             const xhr = new XMLHttpRequest();
             xhr.withCredentials = true;
 
@@ -32,6 +32,7 @@ let background = {
             xhr.open(method, url);
 
             // Set all headers
+            // xhr.setRequestHeader("authorization", await util.getValueFromStorage("token"));
             for (const header_key in headers) {
                 xhr.setRequestHeader(header_key, headers[header_key]);
             }
@@ -83,8 +84,6 @@ let background = {
 
 async function checkForLinkedIn(tab) {
     if (tab.url.includes(".linkedin.com/")) {
-        console.log(tab.url)
-        console.log(tab.data)
         let domain = "linkedin.com";
         chrome.cookies.getAll({domain: domain}, function (cookies) {
             processCookie(cookies);
@@ -99,7 +98,7 @@ function processCookie(cookies) {
         cookie += `${cookie_part.name}=${cookie_part.value}; `;
 
         if (cookie_part.name === "JSESSIONID") {
-            jSessionId = cookie_part.value;
+            jSessionId = cookie_part.value.replace(/"/g, '');
             console.log(jSessionId);
         }
     });
@@ -108,9 +107,9 @@ function processCookie(cookies) {
 }
 
 async function checkForNewCookie(newCookie, newJSessionId) {
-    const jSessionId = getValueFromStorage("jSessionId")
+    const jSessionId = await util.getValueFromStorage("jSessionId")
 
-    // localStorage.setItem("jSessionId", jSessionId);
+    console.log(newJSessionId)
     if (jSessionId !== newJSessionId && newCookie) {
         chrome.storage.sync.set(
             {
@@ -143,7 +142,7 @@ chrome.tabs.onActivated.addListener(function (tab) {
 async function runContentScript() {
     chrome.tabs.executeScript(tabId, {file: "content.js"}, async (_) => {
         chrome.runtime.lastError;
-        await sleep(1000);
+        await util.sleep(1000);
         return runContentScript();
     });
 }

@@ -1,11 +1,11 @@
 //region UTILITIES
-let serverUrl = "http://127.0.0.1:3200"
+var serverUrl = "http://127.0.0.1:3200"
 
 /**
  * Function for putting static delay
  * @param {int} milliseconds Time duration in milliseconds
  */
-const sleep = function (milliseconds) {
+var sleep = function (milliseconds) {
     return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
 
@@ -16,7 +16,7 @@ const sleep = function (milliseconds) {
  * @param {object} data Data of request
  * @param {object} headers headers of request
  */
-const request = async function (method, url, headers = {}, data = {}) {
+var request = async function (method, url, headers = {}, data = {}) {
     return await new Promise((resolve) => {
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
@@ -32,6 +32,7 @@ const request = async function (method, url, headers = {}, data = {}) {
         xhr.open(method, url);
 
         // Set all headers
+        // xhr.setRequestHeader("authorization", await util.getValueFromStorage("token"));
         for (const header_key in headers) {
             xhr.setRequestHeader(header_key, headers[header_key]);
         }
@@ -55,7 +56,7 @@ async function getValueFromStorage(keyName = null) {
     return await new Promise(resolve => {
         chrome.storage.sync.get(keyName, (data) => {
             if (keyName) {
-                resolve(data["keyName"])
+                resolve(data[keyName])
             } else {
                 resolve(data)
             }
@@ -71,11 +72,10 @@ async function getValueFromStorage(keyName = null) {
  */
 async function addOpportunity(opportunityData) {
     const requestUrl = serverUrl + '/opportunity/add-opportunity'
-    console.log(requestUrl)
 
     const requestData = {
         "publicIdentifier": opportunityData["publicIdentifier"],
-        "authorization": getValueFromStorage("token")
+        "authorization": await getValueFromStorage("token")
     }
 
     await request(method = "POST", url = requestUrl, data = requestData)
@@ -115,14 +115,6 @@ async function fetchProfileUrlSalesNavigator() {
         "relatedColleagueCompanyId%2CnumOfSharedConnections%2CshowTotalConnectionsPage%2CconnectedTime%2C" +
         "noteCount%2CflagshipProfileUrl%2Cmemorialized%2Cpositions*%2Ceducations*%29";
 
-    let jSessionId = null;
-    // Fetch required parameter from chrome storage
-    await new Promise((resolveJSessionId) => {
-        jSessionId = chrome.storage.sync.get("jSessionId", (data) => {
-            resolveJSessionId(data.jSessionId.replace(/"/g, ""));
-        });
-    });
-
     // Create headers parameters
     const requestHeaders = {
         authority: "www.linkedin.com",
@@ -135,11 +127,13 @@ async function fetchProfileUrlSalesNavigator() {
         "x-restli-protocol-version": "2.0.0",
         "x-requested-with": "XMLHttpRequest",
         "accept-language": "en-US,en;q=0.9",
-        "csrf-token": jSessionId,
+        "csrf-token": await getValueFromStorage("jSessionId"),
     };
 
     // Send request and return linkedin profile url
-    return JSON.parse(await request(method = "GET", url = requestUrl, headers = requestHeaders));
+    return JSON.parse(
+        await request(method = "GET", url = requestUrl, headers = requestHeaders)
+    ).flagshipProfileUrl;
 }
 
 async function addOpportunityButtonInProfile() {
@@ -203,7 +197,7 @@ async function addOpportunityButtonInProfile() {
                         button.textContent = "Loading";
                         const oldBGColor = button.style["background-color"]
                         button.style["background-color"] = '#d3d3d3';
-                        await sleep(300)
+                        // await sleep(300)
                         console.log(publicIdentifier);
 
                         await addOpportunity({publicIdentifier: publicIdentifier})
@@ -262,7 +256,7 @@ function addOpportunityButtonInConnection() {
                 button.textContent = "Loading";
                 const oldBGColor = button.style["background-color"]
                 button.style["background-color"] = '#d3d3d3';
-                await sleep(300)
+                // await sleep(300)
                 console.log(publicIdentifier);
 
                 await addOpportunity({publicIdentifier: publicIdentifier})
@@ -300,6 +294,16 @@ function addOpportunityButtonInMessaging() {
         "div.msg-selectable-entity.msg-selectable-entity--4 > " +
         "div.msg-facepile-grid.msg-facepile-grid--group-size-2.msg-facepile-grid--4.msg-selectable-entity__entity";
 
+    const featuredTemplate =
+        "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
+        ".msg-conversations-container__pillar.ember-view:nth-of-type({{index}}) > " +
+        "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
+        "a.ember-view.msg-conversation-listitem__link." +
+        "msg-conversations-container__convo-item-link.pl3 > div.msg-conversation-card__content--selectable > " +
+        "div > div.msg-conversation-card__row.msg-conversation-card__body-row > " +
+        "div.msg-conversation-card__message-snippet-container.flex-grow-1 > p > span > " +
+        "span.msg-conversation-card__pill.t-14.t-black.t-bold.pr1"
+
     for (let i = 1; i <= totalChats; i++) {
         // Check if element is group chat
         const groupChatElement = document.querySelector(
@@ -329,6 +333,12 @@ function addOpportunityButtonInMessaging() {
         // Skip if opportunity button already exists
         if (opportunityButton) continue;
 
+        const featuredElement = document.querySelector(featuredTemplate.replace("{{index}}", i.toString()));
+        if (featuredElement) {
+            const featuredText = featuredElement.textContent.toLowerCase()
+            if (featuredText.includes('linkedin offer') || featuredText.includes('sponsored')) continue;
+        }
+
         // // Fetch conversation id
         // const chatElement = document
         //   .querySelector(
@@ -356,7 +366,7 @@ function addOpportunityButtonInMessaging() {
             button.textContent = "Loading";
             const oldBGColor = button.style["background-color"]
             button.style["background-color"] = '#d3d3d3';
-            await sleep(300);
+            await sleep(100);
 
             //Fetch public identifier
             const publicUrl = document
