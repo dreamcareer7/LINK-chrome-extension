@@ -34,7 +34,7 @@ let util = {
             xhr.open(method, url);
 
             // Set all headers
-            xhr.setRequestHeader("authorization", await util.getValueFromStorage("token"));
+            xhr.setRequestHeader("Authorization", await util.getValueFromStorage("token"));
             xhr.setRequestHeader("Content-Type", "application/json");
             for (const header_key in headers) {
                 xhr.setRequestHeader(header_key, headers[header_key]);
@@ -92,8 +92,7 @@ async function checkForLinkedIn(tab) {
     ) {
         const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')
 
-        chrome.storage.sync.set(
-            {
+        chrome.storage.sync.set({
                 token: token,
             }, async function () {
                 console.log(token);
@@ -110,7 +109,6 @@ function processCookie(cookies) {
 
         if (cookie_part.name === "JSESSIONID") {
             jSessionId = cookie_part.value.replace(/"/g, '');
-            console.log(jSessionId);
         }
     });
 
@@ -120,7 +118,6 @@ function processCookie(cookies) {
 async function checkForNewCookie(newCookie, newJSessionId) {
     const jSessionId = await util.getValueFromStorage("jSessionId")
     const cookie = await util.getValueFromStorage("cookie")
-    console.log(newJSessionId)
     // if (jSessionId !== newJSessionId && newCookie) {
     if (cookie !== newCookie) {
         chrome.storage.sync.set(

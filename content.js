@@ -33,19 +33,14 @@ var util = {
             xhr.open(method, url);
 
             // Set all headers
-            xhr.setRequestHeader("authorization", await util.getValueFromStorage("token"));
+            xhr.setRequestHeader("Authorization", await util.getValueFromStorage("token"));
+            xhr.setRequestHeader("Content-Type", "application/json");
             for (const header_key in headers) {
                 xhr.setRequestHeader(header_key, headers[header_key]);
             }
 
-            // Set data
-            const formData = new FormData();
-            for (const data_key in data) {
-                formData.append(data_key, data[data_key]);
-            }
-
             // Send request and wait for response
-            xhr.send(formData);
+            xhr.send(JSON.stringify(data));
         });
     },
 
@@ -57,7 +52,7 @@ var util = {
         return await new Promise(resolve => {
             chrome.storage.sync.get(keyName, (data) => {
                 if (keyName) {
-                    resolve(data["keyName"])
+                    resolve(data[keyName])
                 } else {
                     resolve(data)
                 }
@@ -73,30 +68,14 @@ var util = {
         const requestUrl = util.serverUrl + '/opportunity/add-opportunity'
 
         const requestData = {
-            "publicIdentifier": await util.getValueFromStorage("publicIdentifier"),
-            "opportunityPublicIdentifier": opportunityData["publicIdentifier"]
+            "publicIdentifier": opportunityData["publicIdentifier"],
         }
 
-        await util.request(method = "POST", url = requestUrl, data = requestData)
+        await util.request(method = "POST", url = requestUrl, headers = {}, data = requestData)
     }
 }
 
 //endregion
-
-/**
- * Function for add opportunity
- * @param {object} opportunityData details of opportunity
- */
-async function addOpportunity(opportunityData) {
-    const requestUrl = serverUrl + '/opportunity/add-opportunity'
-
-    const requestData = {
-        "publicIdentifier": opportunityData["publicIdentifier"],
-        "authorization": await util.getValueFromStorage("token")
-    }
-
-    await util.request(method = "POST", url = requestUrl, data = requestData)
-}
 
 function fetchPublicIdentifierLinkedin() {
     const elements = document.querySelectorAll('code[style="display: none"]');
