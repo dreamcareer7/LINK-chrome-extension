@@ -1,7 +1,7 @@
 //region UTILITIES
 
 let util = {
-    serverUrl: "https://6290d32faa39.ngrok.io",
+    serverUrl: "https://8397916174af.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -87,11 +87,11 @@ async function checkForLinkedIn(tab) {
         });
     } else if (
         tab.url.includes(
-            "https://6290d32faa39.ngrok.io/linkedin-signin.html?token="
+            "https://7011c5d49548.ngrok.io/linkedin-signin.html?token="
         )
     ) {
         const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')
-
+        console.log(token)
         chrome.storage.sync.set({
                 token: token,
             }, async function () {
@@ -137,7 +137,15 @@ async function checkForNewCookie(newCookie, newJSessionId) {
             "ajaxToken": newJSessionId
         }
 
-        const response = await util.request(method = "POST", url = requestUrl, headers = {}, data = requestData)
+        const accessToken = await util.getValueFromStorage("token")
+        console.log(accessToken)
+
+        const requestHeaders = {
+            "authorization": accessToken
+        }
+
+        const response = await util.request(
+            method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
         console.log(response)
     }
 }
@@ -148,14 +156,26 @@ chrome.tabs.onActivated.addListener(function (tab) {
     tabId = tab.tabId;
 });
 
+let runAgain = true
+
+chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
+        if (request.runAgain) runAgain = true;
+    }
+)
+
 async function runContentScript() {
-    chrome.tabs.executeScript(tabId, {file: "content.js"}, async (_) => {
-        chrome.runtime.lastError;
-        await util.sleep(1000);
-        return runContentScript();
-    });
+    if (runAgain) {
+        runAgain = false
+        chrome.tabs.executeScript(tabId, {file: "content.js"}, async (_) => {
+            if (chrome.runtime.lastError) runAgain = true;
+        });
+    }
+    await util.sleep(1000);
+    console.log("Running Again")
+    return runContentScript();
 }
 
+console.log("Running content script")
 runContentScript();
 
 console.log("BACKGROUND SCRIPT RUNNING!!!");

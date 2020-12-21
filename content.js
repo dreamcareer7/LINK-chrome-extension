@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://6290d32faa39.ngrok.io",
+    serverUrl: "https://8397916174af.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -33,7 +33,6 @@ var util = {
             xhr.open(method, url);
 
             // Set all headers
-            xhr.setRequestHeader("Authorization", await util.getValueFromStorage("token"));
             xhr.setRequestHeader("Content-Type", "application/json");
             for (const header_key in headers) {
                 xhr.setRequestHeader(header_key, headers[header_key]);
@@ -71,7 +70,44 @@ var util = {
             "publicIdentifier": opportunityData["publicIdentifier"],
         }
 
-        await util.request(method = "POST", url = requestUrl, headers = {}, data = requestData)
+        const requestHeaders = {
+            "Authorization": await util.getValueFromStorage("token")
+        }
+
+        await util.request(
+            method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
+    },
+
+    /**
+     * Function to get added opportunity data
+     * @return {object[]} opportunity data
+     */
+    getOpportunity: async function () {
+        const requestUrl = util.serverUrl + '/opportunity/get-opportunity'
+
+        const accessToken = await util.getValueFromStorage("token")
+        console.log(accessToken)
+
+        const requestHeaders = {
+            "Authorization": await util.getValueFromStorage("token")
+        }
+
+        return await util.request(method = "GET", url = requestUrl, headers = requestHeaders)
+    },
+
+    /**
+     * Function for extracting public identifier from opportunity data
+     * @param {object[]} opportunityData
+     * @return {String[]} Public identifiers
+     */
+    extractPublicIdentifier: async function (opportunityData) {
+        let publicIdentifiers = [];
+
+        for (const opportunity in opportunityData) {
+            publicIdentifiers.push(opportunityData.publicIdentifier)
+        }
+
+        return publicIdentifiers
     }
 }
 
@@ -158,7 +194,15 @@ async function addOpportunityButtonInProfile() {
         if (connectionType.textContent.trim().includes("1st")) {
 
             if (!opportunityButton) {
-                // Fetch public identifire of particular user
+                // Get opportunity
+                console.log("Fetching opportunity data")
+                const opportunitydata = await util.getOpportunity()
+                console.log(opportunitydata)
+                console.log('Fetching Public Identifiers')
+                const publicIdentifiers = await util.extractPublicIdentifier(opportunitydata["data"]);
+                console.log(publicIdentifiers)
+
+                // Fetch public identifier of particular user
                 let profileUrl = document.querySelector(
                     'a[data-control-name="contact_see_more"]'
                 );
@@ -182,7 +226,14 @@ async function addOpportunityButtonInProfile() {
                 if (!opportunityButton) {
                     // Create "Opportunity" button to place
                     const button = document.createElement("button");
-                    const text = document.createTextNode("Opportunity");
+
+                    let text;
+                    if (publicIdentifiers.includes(publicIdentifier)) {
+                        console.log("Inside if")
+                        text = document.createTextNode("Update");
+                    } else {
+                        text = document.createTextNode("Opportunity");
+                    }
                     button.appendChild(text);
                     button.id = "opportunity-button-profile";
 
@@ -388,9 +439,9 @@ function addOpportunityButtonInMessaging() {
 (async function () {
     const pageLink = document.URL;
     if (pageLink.includes(".linkedin.com/")) {
-        addOpportunityButtonInProfile();
-        addOpportunityButtonInConnection();
-        addOpportunityButtonInMessaging();
+        await addOpportunityButtonInProfile();
+        await addOpportunityButtonInConnection();
+        await addOpportunityButtonInMessaging();
         // chrome.storage.sync.get(null, function (data) {
         //     if ("linkedInId" in data) {
         //         const publicIdentifier = fetchPublicIdentifierLinkedin();
@@ -408,7 +459,7 @@ function addOpportunityButtonInMessaging() {
     }
     // else if (
     //     pageLink.includes(
-    //         "https://6290d32faa39.ngrok.io/linkedin-signin.html?token="
+    //         "https://8397916174af.ngrok.io/linkedin-signin.html?token="
     //     )
     // ) {
     //     const token = pageLink.split('?')[1].split('&')[0].replace('token=', '')
@@ -419,4 +470,6 @@ function addOpportunityButtonInMessaging() {
     //         }
     //     )
     // }
+    chrome.runtime.sendMessage({runAgain: true})
+
 })();
