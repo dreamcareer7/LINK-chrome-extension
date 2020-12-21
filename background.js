@@ -1,7 +1,7 @@
 //region UTILITIES
 
 let util = {
-    serverUrl: "https://8397916174af.ngrok.io",
+    serverUrl: "http://127.0.0.1:3200",
 
     /**
      * Function for putting static delay
@@ -34,7 +34,6 @@ let util = {
             xhr.open(method, url);
 
             // Set all headers
-            xhr.setRequestHeader("Authorization", await util.getValueFromStorage("token"));
             xhr.setRequestHeader("Content-Type", "application/json");
             for (const header_key in headers) {
                 xhr.setRequestHeader(header_key, headers[header_key]);
@@ -163,13 +162,20 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     }
 )
 
+let tries = 0
+
 async function runContentScript() {
     if (runAgain) {
         runAgain = false
+        tries = 0
+        console.log("running content script")
         chrome.tabs.executeScript(tabId, {file: "content.js"}, async (_) => {
             if (chrome.runtime.lastError) runAgain = true;
         });
     }
+
+    if (tries > 10) runAgain = true;
+    tries++;
     await util.sleep(1000);
     console.log("Running Again")
     return runContentScript();

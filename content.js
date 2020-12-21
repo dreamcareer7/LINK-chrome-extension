@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://8397916174af.ngrok.io",
+    serverUrl: "http://127.0.0.1:3200",
 
     /**
      * Function for putting static delay
@@ -25,6 +25,7 @@ var util = {
             // Add event handler for request
             xhr.addEventListener("readystatechange", function () {
                 if (this.readyState === 4) {
+                    console.log(this.status)
                     resolve(this.responseText);
                 }
             });
@@ -74,8 +75,10 @@ var util = {
             "Authorization": await util.getValueFromStorage("token")
         }
 
-        await util.request(
+        const response = await util.request(
             method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
+
+
     },
 
     /**
@@ -86,13 +89,16 @@ var util = {
         const requestUrl = util.serverUrl + '/opportunity/get-opportunity'
 
         const accessToken = await util.getValueFromStorage("token")
-        console.log(accessToken)
 
         const requestHeaders = {
             "Authorization": await util.getValueFromStorage("token")
         }
 
-        return await util.request(method = "GET", url = requestUrl, headers = requestHeaders)
+        const response = await util.request(method = "GET", url = requestUrl, headers = requestHeaders)
+
+        // console.log(response)
+
+        return JSON.parse(response)
     },
 
     /**
@@ -103,8 +109,8 @@ var util = {
     extractPublicIdentifier: async function (opportunityData) {
         let publicIdentifiers = [];
 
-        for (const opportunity in opportunityData) {
-            publicIdentifiers.push(opportunityData.publicIdentifier)
+        for (const index in opportunityData) {
+            publicIdentifiers.push(opportunityData[index].publicIdentifier)
         }
 
         return publicIdentifiers
@@ -195,11 +201,9 @@ async function addOpportunityButtonInProfile() {
 
             if (!opportunityButton) {
                 // Get opportunity
-                console.log("Fetching opportunity data")
-                const opportunitydata = await util.getOpportunity()
-                console.log(opportunitydata)
-                console.log('Fetching Public Identifiers')
-                const publicIdentifiers = await util.extractPublicIdentifier(opportunitydata["data"]);
+                console.log("Fetching opportunity")
+                const opportunityData = await util.getOpportunity()
+                const publicIdentifiers = await util.extractPublicIdentifier(opportunityData["data"]);
                 console.log(publicIdentifiers)
 
                 // Fetch public identifier of particular user
@@ -229,8 +233,8 @@ async function addOpportunityButtonInProfile() {
 
                     let text;
                     if (publicIdentifiers.includes(publicIdentifier)) {
-                        console.log("Inside if")
                         text = document.createTextNode("Update");
+                        button.style["background-color"] = "#88E000"
                     } else {
                         text = document.createTextNode("Opportunity");
                     }
@@ -263,10 +267,13 @@ async function addOpportunityButtonInProfile() {
     }
 }
 
-function addOpportunityButtonInConnection() {
+async function addOpportunityButtonInConnection() {
     // Fetch total connection count to loop through
     const liClass = "li.mn-connection-card.artdeco-list.ember-view";
     const totalConnections = document.querySelectorAll(liClass).length;
+
+    let opportunityFetched = false
+    let publicIdentifiers;
 
     for (let i = 1; i <= totalConnections; i++) {
         // Check if Opportunity button already exists
@@ -275,7 +282,17 @@ function addOpportunityButtonInConnection() {
         );
 
         if (opportunityButton == null) {
-            // Fetch public identifire of particular user
+
+            if (!opportunityFetched) {
+                // Get opportunity
+                console.log("====> Fetching opportunity")
+                const opportunityData = await util.getOpportunity()
+                publicIdentifiers = await util.extractPublicIdentifier(opportunityData["data"]);
+                console.log(publicIdentifiers)
+                opportunityFetched = true
+            }
+
+            // Fetch public identifier of particular user
             const profileUrl = document
                 .querySelector(
                     `${liClass}:nth-of-type(${i.toString()}) > a.mn-connection-card__picture.ember-view`
@@ -290,30 +307,45 @@ function addOpportunityButtonInConnection() {
                 `${liClass}:nth-of-type(${i.toString()}) > div.mn-connection-card__action-container`
             );
 
-            // Create "Opportunity" button to place
-            const button = document.createElement("button");
-            const text = document.createTextNode("Opportunity");
-            button.appendChild(text);
-            button.id = "opportunity-button-connection";
+            // Check if Opportunity button already exists
+            const opportunityButton = document.querySelector(
+                `${liClass}:nth-of-type(${i.toString()}) > div.mn-connection-card__action-container > #opportunity-button-connection`
+            );
 
-            // Add onClick event function for "Opportunity" button
-            button.onclick = async function onClickUpdateButton() {
-                button.disabled = true
-                button.textContent = "Loading";
-                const oldBGColor = button.style["background-color"]
-                button.style["background-color"] = '#d3d3d3';
-                // await util.sleep(300)
-                console.log(publicIdentifier);
+            if (opportunityButton == null) {
+                // Create "Opportunity" button to place
+                const button = document.createElement("button");
 
-                await util.addOpportunity({publicIdentifier: publicIdentifier})
+                let text;
+                if (publicIdentifiers.includes(publicIdentifier)) {
+                    text = document.createTextNode("Update");
+                    button.style["background-color"] = "#88E000"
+                } else {
+                    text = document.createTextNode("Opportunity");
+                }
 
-                button.textContent = "Update";
-                button.disabled = false
-                button.style["background-color"] = "#88E000"
-            };
+                button.appendChild(text);
+                button.id = "opportunity-button-connection";
 
-            // Add button inside element
-            element.insertBefore(button, element.firstChild);
+                // Add onClick event function for "Opportunity" button
+                button.onclick = async function onClickUpdateButton() {
+                    button.disabled = true
+                    button.textContent = "Loading";
+                    const oldBGColor = button.style["background-color"]
+                    button.style["background-color"] = '#d3d3d3';
+                    // await util.sleep(300)
+                    console.log(publicIdentifier);
+
+                    await util.addOpportunity({publicIdentifier: publicIdentifier})
+
+                    button.textContent = "Update";
+                    button.disabled = false
+                    button.style["background-color"] = "#88E000"
+                };
+
+                // Add button inside element
+                element.insertBefore(button, element.firstChild);
+            }
         }
     }
 }
@@ -442,34 +474,7 @@ function addOpportunityButtonInMessaging() {
         await addOpportunityButtonInProfile();
         await addOpportunityButtonInConnection();
         await addOpportunityButtonInMessaging();
-        // chrome.storage.sync.get(null, function (data) {
-        //     if ("linkedInId" in data) {
-        //         const publicIdentifier = fetchPublicIdentifierLinkedin();
-        //         chrome.storage.sync.set({publicIdentifier: publicIdentifier}, () => {
-        //             console.log(data);
-        //
-        //             // TODO: Add registering public identifier with app depend linkedin id
-        //
-        //             chrome.storage.sync.remove("linkedInId", function () {
-        //                 console.log("Id removed");
-        //             });
-        //         });
-        //     }
-        // });
     }
-    // else if (
-    //     pageLink.includes(
-    //         "https://8397916174af.ngrok.io/linkedin-signin.html?token="
-    //     )
-    // ) {
-    //     const token = pageLink.split('?')[1].split('&')[0].replace('token=', '')
-    //
-    //     chrome.storage.sync.set({token: token}, async function () {
-    //             console.log(token)
-    //             console.log(await util.getValueFromStorage(('token')))
-    //         }
-    //     )
-    // }
-    chrome.runtime.sendMessage({runAgain: true})
 
+    chrome.runtime.sendMessage({runAgain: true})
 })();
