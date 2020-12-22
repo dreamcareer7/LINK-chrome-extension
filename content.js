@@ -114,6 +114,23 @@ var util = {
         }
 
         return publicIdentifiers
+    },
+
+    /**
+     * Function for extracting public identifier from opportunity data
+     * @param {object[]} opportunityData
+     * @return {String[]} conversation Ids
+     */
+    extractConversationId: async function (opportunityData) {
+        let conversationIds = []
+
+        for (const index in opportunityData) {
+            if (opportunityData[index].conversationId) {
+                conversationIds.push(opportunityData[index].conversationId)
+            }
+        }
+
+        return conversationIds
     }
 }
 
@@ -201,7 +218,7 @@ async function addOpportunityButtonInProfile() {
 
             if (!opportunityButton) {
                 // Get opportunity
-                console.log("Fetching opportunity")
+                console.log("Fetching opportunity profile")
                 const opportunityData = await util.getOpportunity()
                 const publicIdentifiers = await util.extractPublicIdentifier(opportunityData["data"]);
                 console.log(publicIdentifiers)
@@ -245,7 +262,6 @@ async function addOpportunityButtonInProfile() {
                     button.onclick = async function onClickUpdateButton() {
                         button.disabled = true
                         button.textContent = "Loading";
-                        const oldBGColor = button.style["background-color"]
                         button.style["background-color"] = '#d3d3d3';
                         // await util.sleep(300)
                         console.log(publicIdentifier);
@@ -285,7 +301,7 @@ async function addOpportunityButtonInConnection() {
 
             if (!opportunityFetched) {
                 // Get opportunity
-                console.log("====> Fetching opportunity")
+                console.log("====> Fetching opportunity connections")
                 const opportunityData = await util.getOpportunity()
                 publicIdentifiers = await util.extractPublicIdentifier(opportunityData["data"]);
                 console.log(publicIdentifiers)
@@ -331,7 +347,6 @@ async function addOpportunityButtonInConnection() {
                 button.onclick = async function onClickUpdateButton() {
                     button.disabled = true
                     button.textContent = "Loading";
-                    const oldBGColor = button.style["background-color"]
                     button.style["background-color"] = '#d3d3d3';
                     // await util.sleep(300)
                     console.log(publicIdentifier);
@@ -350,7 +365,7 @@ async function addOpportunityButtonInConnection() {
     }
 }
 
-function addOpportunityButtonInMessaging() {
+async function addOpportunityButtonInMessaging() {
     // Fetch total chats count to loop through
     const totalChats = document.getElementsByClassName(
         "msg-conversation-listitem msg-conversations-container__convo-item msg-conversations-container__pillar ember-view"
@@ -382,6 +397,9 @@ function addOpportunityButtonInMessaging() {
         "div.msg-conversation-card__message-snippet-container.flex-grow-1 > p > span > " +
         "span.msg-conversation-card__pill.t-14.t-black.t-bold.pr1"
 
+    let opportunityFetched = false
+    let conversationIds;
+
     for (let i = 1; i <= totalChats; i++) {
         // Check if element is group chat
         const groupChatElement = document.querySelector(
@@ -399,10 +417,6 @@ function addOpportunityButtonInMessaging() {
         // Skip if element not found
         if (!element) continue;
 
-        // Change element style
-        element.style["height"] = "112px";
-        element.style["padding"] = "12px 8px 35px 12px";
-
         const opportunityButton = document.querySelector(
             elementTemplate.replace("{{index}}", i.toString()) +
             " > #opportunity-button-messaging"
@@ -417,24 +431,45 @@ function addOpportunityButtonInMessaging() {
             if (featuredText.includes('linkedin offer') || featuredText.includes('sponsored')) continue;
         }
 
-        // // Fetch conversation id
-        // const chatElement = document
-        //   .querySelector(
-        //     "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
-        //       `.msg-conversations-container__pillar.ember-view:nth-of-type(${i.toString()}) > ` +
-        //       "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
-        //       "a.ember-view.msg-conversation-listitem__link." +
-        //       "msg-conversations-container__convo-item-link.pl3"
-        //   )
-        //   .getAttribute("href");
+        // Change element style
+        element.style["height"] = "112px";
+        element.style["padding"] = "12px 8px 35px 12px";
 
-        // const chatElementParts = chatElement.split("/");
-        // const conversationId =
-        //   chatElementParts[chatElementParts.indexOf("thread") + 1];
+        if (!opportunityFetched) {
+            // Get opportunity
+            console.log("====> Fetching opportunity messaging")
+            const opportunityData = await util.getOpportunity()
+            conversationIds = await util.extractConversationId(opportunityData["data"]);
+            console.log(conversationIds)
+            opportunityFetched = true
+        }
+
+        // Fetch conversation id
+        const chatElement = document
+            .querySelector(
+                "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
+                `.msg-conversations-container__pillar.ember-view:nth-of-type(${i.toString()}) > ` +
+                "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
+                "a.ember-view.msg-conversation-listitem__link." +
+                "msg-conversations-container__convo-item-link.pl3"
+            )
+            .getAttribute("href");
+
+        const chatElementParts = chatElement.split("/");
+        const conversationId =
+            chatElementParts[chatElementParts.indexOf("thread") + 1];
 
         // Create "Opportunity" button to place
         const button = document.createElement("button");
-        const text = document.createTextNode("Opportunity");
+
+        let text;
+        if (conversationIds.includes(conversationId)) {
+            text = document.createTextNode("Update");
+            button.style["background-color"] = "#88E000"
+        } else {
+            text = document.createTextNode("Opportunity");
+        }
+
         button.appendChild(text);
         button.id = "opportunity-button-messaging";
 
@@ -442,10 +477,9 @@ function addOpportunityButtonInMessaging() {
         button.onclick = async function onClickUpdateButton() {
             button.disabled = true
             button.textContent = "Loading";
-            const oldBGColor = button.style["background-color"]
             button.style["background-color"] = '#d3d3d3';
-            await util.sleep(100);
 
+            await util.sleep(100);
             //Fetch public identifier
             const publicUrl = document
                 .querySelector('a[data-control-name="topcard"]')

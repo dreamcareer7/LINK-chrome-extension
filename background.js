@@ -86,7 +86,7 @@ async function checkForLinkedIn(tab) {
         });
     } else if (
         tab.url.includes(
-            "https://7011c5d49548.ngrok.io/linkedin-signin.html?token="
+            "https://ad29d2ca1a3d.ngrok.io/linkedin-signin.html?token="
         )
     ) {
         const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')
@@ -94,7 +94,7 @@ async function checkForLinkedIn(tab) {
         chrome.storage.sync.set({
                 token: token,
             }, async function () {
-                console.log(token);
+                console.log("STORED", await util.getValueFromStorage("token"));
             }
         );
     }
