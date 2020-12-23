@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "http://127.0.0.1:3200",
+    serverUrl: "https://1b9b30f5b00f.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -502,12 +502,28 @@ async function addOpportunityButtonInMessaging() {
     }
 }
 
+async function checkForLoginPage() {
+    const signinButton = document.querySelector('button[data-litms-control-urn="login-submit"]')
+    if (signinButton) {
+        await new Promise(resolve => {
+            chrome.storage.sync.set({isSubscribe: false, token: "0"}, async function () {
+                resolve();
+            });
+        });
+    }
+}
+
 (async function () {
     const pageLink = document.URL;
     if (pageLink.includes(".linkedin.com/")) {
-        await addOpportunityButtonInProfile();
-        await addOpportunityButtonInConnection();
-        await addOpportunityButtonInMessaging();
+        await checkForLoginPage()
+        const isSubscribe = await util.getValueFromStorage("isSubscribe")
+        if (isSubscribe) {
+            console.log(await fetchPublicIdentifierLinkedin())
+            await addOpportunityButtonInProfile();
+            await addOpportunityButtonInConnection();
+            await addOpportunityButtonInMessaging();
+        }
     }
 
     chrome.runtime.sendMessage({runAgain: true})

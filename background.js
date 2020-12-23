@@ -1,7 +1,17 @@
+async function resetValidation() {
+    await new Promise(resolve => {
+        chrome.storage.sync.set({isSubscribe: false, token: "0"}, async function () {
+            resolve();
+        });
+    });
+}
+
+resetValidation()
+
 //region UTILITIES
 
 let util = {
-    serverUrl: "http://127.0.0.1:3200",
+    serverUrl: "https://1b9b30f5b00f.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -86,15 +96,16 @@ async function checkForLinkedIn(tab) {
         });
     } else if (
         tab.url.includes(
-            "https://ad29d2ca1a3d.ngrok.io/linkedin-signin.html?token="
+            "https://1b9b30f5b00f.ngrok.io/linkedin-signin.html?token="
         )
     ) {
         const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')
         console.log(token)
         chrome.storage.sync.set({
                 token: token,
+                isSubscribe: true,
             }, async function () {
-                console.log("STORED", await util.getValueFromStorage("token"));
+                console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
             }
         );
     }
@@ -165,7 +176,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
 let tries = 0
 
 async function runContentScript() {
-    if (runAgain) {
+    if (runAgain && (await util.getValueFromStorage("isSubscribe"))) {
         runAgain = false
         tries = 0
         console.log("running content script")
@@ -184,7 +195,7 @@ async function runContentScript() {
 console.log("Running content script")
 runContentScript();
 
-console.log("BACKGROUND SCRIPT RUNNING!!!");
+console.log(`BACKGROUND SCRIPT RUNNING!!! ${(new Date()).toString()}`);
 
 chrome.webNavigation.onCommitted.addListener(function () {
     // chrome.tabs.executeScript(tabId, { file: "content.js" });
