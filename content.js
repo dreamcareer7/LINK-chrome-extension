@@ -428,7 +428,11 @@ async function addOpportunityButtonInMessaging() {
         const featuredElement = document.querySelector(featuredTemplate.replace("{{index}}", i.toString()));
         if (featuredElement) {
             const featuredText = featuredElement.textContent.toLowerCase()
-            if (featuredText.includes('linkedin offer') || featuredText.includes('sponsored')) continue;
+            if (
+                featuredText.includes('linkedin offer') ||
+                featuredText.includes('sponsored') ||
+                featuredText.includes('in mail')
+            ) continue;
         }
 
         // Change element style
