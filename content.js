@@ -253,7 +253,7 @@ async function addOpportunityButtonInProfile() {
                         text = document.createTextNode("Update");
                         button.style["background-color"] = "#88E000"
                     } else {
-                        text = document.createTextNode("Opportunity");
+                        text = document.createTextNode("Add");
                     }
                     button.appendChild(text);
                     button.id = "opportunity-button-profile";
@@ -337,7 +337,7 @@ async function addOpportunityButtonInConnection() {
                     text = document.createTextNode("Update");
                     button.style["background-color"] = "#88E000"
                 } else {
-                    text = document.createTextNode("Opportunity");
+                    text = document.createTextNode("Add");
                 }
 
                 button.appendChild(text);
@@ -471,7 +471,7 @@ async function addOpportunityButtonInMessaging() {
             text = document.createTextNode("Update");
             button.style["background-color"] = "#88E000"
         } else {
-            text = document.createTextNode("Opportunity");
+            text = document.createTextNode("Add");
         }
 
         button.appendChild(text);
