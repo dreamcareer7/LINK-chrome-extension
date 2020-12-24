@@ -251,34 +251,46 @@ async function addOpportunityButtonInProfile() {
                 if (!opportunityButton) {
                     // Create "Opportunity" button to place
                     const button = document.createElement("button");
-
-                    let text;
-                    if (publicIdentifiers.includes(publicIdentifier)) {
-                        text = document.createTextNode("Update");
-                        button.style["background-color"] = "#88E000"
-                    } else {
-                        text = document.createTextNode("Add");
-                    }
-                    button.appendChild(text);
+                    const textNode = document.createTextNode("Loading");
+                    button.appendChild(textNode);
                     button.id = "opportunity-button-profile";
+
+                    let text, color;
+                    if (publicIdentifiers.includes(publicIdentifier)) {
+                        text = "Update"
+                        color = "#88E000"
+                    } else {
+                        text = "Add";
+                        color = "#0a66c2"
+                    }
+
+                    button.textContent = text
+                    button.style["background-color"] = color
 
                     // Add onClick event function for "Opportunity" button
                     button.onclick = async function onClickUpdateButton() {
                         button.disabled = true
                         button.textContent = "Loading";
                         button.style["background-color"] = '#d3d3d3';
-                        // await util.sleep(300)
                         console.log(publicIdentifier);
 
-                        await util.addOpportunity({publicIdentifier: publicIdentifier})
+                        const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
-                        button.textContent = "Update";
+                        if (result) {
+                            text = "Update"
+                            color = "#88E000"
+                        } else {
+                            text = "Retry"
+                            color = "#ff9900"
+                        }
+
+                        button.textContent = text
+                        button.style["background-color"] = color
                         button.disabled = false
-                        button.style["background-color"] = "#88E000"
                     };
 
                     // Add button inside element
-                    element.appendChild(button);
+                    element.insertBefore(button, element.firstChild);
                 }
             }
         } else if (opportunityButton) {
@@ -335,31 +347,42 @@ async function addOpportunityButtonInConnection() {
             if (opportunityButton == null) {
                 // Create "Opportunity" button to place
                 const button = document.createElement("button");
+                const textNode = document.createTextNode("Loading");
+                button.appendChild(textNode);
+                button.id = "opportunity-button-connection";
 
-                let text;
+                let text, color;
                 if (publicIdentifiers.includes(publicIdentifier)) {
-                    text = document.createTextNode("Update");
-                    button.style["background-color"] = "#88E000"
+                    text = "Update"
+                    color = "#88E000"
                 } else {
-                    text = document.createTextNode("Add");
+                    text = "Add";
+                    color = "#0a66c2"
                 }
 
-                button.appendChild(text);
-                button.id = "opportunity-button-connection";
+                button.textContent = text
+                button.style["background-color"] = color
 
                 // Add onClick event function for "Opportunity" button
                 button.onclick = async function onClickUpdateButton() {
                     button.disabled = true
                     button.textContent = "Loading";
                     button.style["background-color"] = '#d3d3d3';
-                    // await util.sleep(300)
                     console.log(publicIdentifier);
 
-                    await util.addOpportunity({publicIdentifier: publicIdentifier})
+                    const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
-                    button.textContent = "Update";
+                    if (result) {
+                        text = "Update"
+                        color = "#88E000"
+                    } else {
+                        text = "Retry"
+                        color = "#ff9900"
+                    }
+
+                    button.textContent = text
+                    button.style["background-color"] = color
                     button.disabled = false
-                    button.style["background-color"] = "#88E000"
                 };
 
                 // Add button inside element
@@ -469,17 +492,21 @@ async function addOpportunityButtonInMessaging() {
 
         // Create "Opportunity" button to place
         const button = document.createElement("button");
+        const textNode = document.createTextNode("Loading");
+        button.appendChild(textNode);
+        button.id = "opportunity-button-messaging";
 
-        let text;
+        let text, color;
         if (conversationIds.includes(conversationId)) {
-            text = document.createTextNode("Update");
-            button.style["background-color"] = "#88E000"
+            text = "Update"
+            color = "#88E000"
         } else {
-            text = document.createTextNode("Add");
+            text = "Add";
+            color = "#0a66c2"
         }
 
-        button.appendChild(text);
-        button.id = "opportunity-button-messaging";
+        button.textContent = text
+        button.style["background-color"] = color
 
         // Add onClick event function for "Opportunity" button
         button.onclick = async function onClickUpdateButton() {
@@ -487,22 +514,28 @@ async function addOpportunityButtonInMessaging() {
             button.textContent = "Loading";
             button.style["background-color"] = '#d3d3d3';
 
-            await util.sleep(100);
             //Fetch public identifier
+            await util.sleep(100);
             const publicUrl = document
                 .querySelector('a[data-control-name="topcard"]')
                 .getAttribute("href")
                 .split("/");
             const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
-
             console.log(publicIdentifier);
 
-            await util.addOpportunity({publicIdentifier: publicIdentifier})
+            const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
-            button.textContent = "Update";
+            if (result) {
+                text = "Update"
+                color = "#88E000"
+            } else {
+                text = "Retry"
+                color = "#ff9900"
+            }
+
+            button.textContent = text
+            button.style["background-color"] = color
             button.disabled = false
-            button.style["background-color"] = "#88E000"
-
         };
 
         // Add button inside element

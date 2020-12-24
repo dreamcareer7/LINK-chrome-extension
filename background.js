@@ -156,7 +156,7 @@ async function checkForNewCookie(newCookie, newJSessionId) {
 
         const response = await util.request(
             method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
-        
+
         console.log(response.responseText)
     }
 }
