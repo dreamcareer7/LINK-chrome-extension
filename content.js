@@ -509,7 +509,9 @@ async function addOpportunityButtonInMessaging() {
         button.style["background-color"] = color
 
         // Add onClick event function for "Opportunity" button
-        button.onclick = async function onClickUpdateButton() {
+        button.onclick = async function onClickUpdateButton(event) {
+            event.stopPropagation();
+            event.preventDefault();
             button.disabled = true
             button.textContent = "Loading";
             button.style["background-color"] = '#d3d3d3';
