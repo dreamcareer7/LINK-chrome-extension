@@ -36,7 +36,7 @@ let util = {
             // Add event handler for request
             xhr.addEventListener("readystatechange", function () {
                 if (this.readyState === 4) {
-                    resolve(this.responseText);
+                    resolve(this);
                 }
             });
 
@@ -156,7 +156,8 @@ async function checkForNewCookie(newCookie, newJSessionId) {
 
         const response = await util.request(
             method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
-        console.log(response)
+        
+        console.log(response.responseText)
     }
 }
 

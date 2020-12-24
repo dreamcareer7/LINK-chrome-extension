@@ -26,7 +26,7 @@ var util = {
             xhr.addEventListener("readystatechange", function () {
                 if (this.readyState === 4) {
                     console.log(this.status)
-                    resolve(this.responseText);
+                    resolve(this);
                 }
             });
 
@@ -76,9 +76,13 @@ var util = {
         }
 
         const response = await util.request(
-            method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
+            method = "POST",
+            url = requestUrl,
+            headers = requestHeaders,
+            data = requestData
+        )
 
-
+        return response.status === 200;
     },
 
     /**
@@ -98,7 +102,7 @@ var util = {
 
         // console.log(response)
 
-        return JSON.parse(response)
+        return JSON.parse(response.responseText)
     },
 
     /**
