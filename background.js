@@ -11,7 +11,7 @@ resetValidation()
 //region UTILITIES
 
 let util = {
-    serverUrl: "http://127.0.0.1:3200",
+    serverUrl: "https://3132e88c5b94.ngrok.io",
 
     /**
      * Function for putting static delay
