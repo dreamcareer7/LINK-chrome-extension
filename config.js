@@ -1,4 +1,4 @@
 var config = {
-    "serverUrl": "https://1b9b30f5b00f.ngrok.io",
+    "serverUrl": "https://3132e88c5b94.ngrok.io",
     "linkedInIdPage": ""
 }

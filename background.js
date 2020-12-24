@@ -11,7 +11,7 @@ resetValidation()
 //region UTILITIES
 
 let util = {
-    serverUrl: "https://1b9b30f5b00f.ngrok.io",
+    serverUrl: "https://3132e88c5b94.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -96,7 +96,7 @@ async function checkForLinkedIn(tab) {
         });
     } else if (
         tab.url.includes(
-            "https://1b9b30f5b00f.ngrok.io/linkedin-signin.html?token="
+            "https://3132e88c5b94.ngrok.io/linkedin-signin.html?token="
         )
     ) {
         const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')
