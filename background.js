@@ -6,7 +6,7 @@ async function resetValidation() {
     });
 }
 
-resetValidation()
+// resetValidation()
 
 //region UTILITIES
 

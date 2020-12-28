@@ -4,7 +4,7 @@
   "version": "1.0",
   "description": "Make a better observation",
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["util.js", "background.js"]
   },
   "content_scripts": [
     {

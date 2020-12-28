@@ -7,7 +7,7 @@ var sleep = function (milliseconds) {
 };
 
 /**
- * Function to make XHL Http Request
+ * Function to make XML Http Request
  * @param {string} method Method of request
  * @param {string} url url of request
  * @param {object} data Data of request
