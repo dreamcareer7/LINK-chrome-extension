@@ -11,7 +11,7 @@ resetValidation()
 //region UTILITIES
 
 let util = {
-    serverUrl: "https://3132e88c5b94.ngrok.io",
+    serverUrl: "https://a0ad22839e47.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -68,22 +68,7 @@ let util = {
                 }
             })
         })
-    },
-    /**
-     * Function for add opportunity
-     * @param {object} opportunityData details of opportunity
-     */
-    addOpportunity: async function (opportunityData) {
-        const requestUrl = util.serverUrl + '/opportunity/add-opportunity'
-
-        const requestData = {
-            "publicIdentifier": await util.getValueFromStorage("publicIdentifier"),
-            "opportunityPublicIdentifier": opportunityData["publicIdentifier"]
-        }
-
-        await util.request(method = "POST", url = requestUrl, data = requestData)
     }
-
 }
 
 //endregion
@@ -96,7 +81,7 @@ async function checkForLinkedIn(tab) {
         });
     } else if (
         tab.url.includes(
-            "https://3132e88c5b94.ngrok.io/linkedin-signin.html?token="
+            "https://a0ad22839e47.ngrok.io/linkedin-signin.html?token="
         )
     ) {
         const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')

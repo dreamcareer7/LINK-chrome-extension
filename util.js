@@ -1,5 +1,3 @@
-/* globals chrome */
-
 /**
  * Function for putting static delay
  * @param {int} milliseconds Time duration in milliseconds

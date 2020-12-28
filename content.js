@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://3132e88c5b94.ngrok.io",
+    serverUrl: "https://a0ad22839e47.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -87,18 +87,18 @@ var util = {
 
     /**
      * Function to get added opportunity data
+     * @param {object} requestData data to be send when doing request
      * @return {object[]} opportunity data
      */
-    getOpportunity: async function () {
+    getOpportunity: async function (requestData = {}) {
         const requestUrl = util.serverUrl + '/opportunity/get-opportunity'
-
-        const accessToken = await util.getValueFromStorage("token")
 
         const requestHeaders = {
             "Authorization": await util.getValueFromStorage("token")
         }
 
-        const response = await util.request(method = "GET", url = requestUrl, headers = requestHeaders)
+        const response = await util.request(
+            method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
 
         // console.log(response)
 
@@ -424,8 +424,16 @@ async function addOpportunityButtonInMessaging() {
         "div.msg-conversation-card__message-snippet-container.flex-grow-1 > p > span > " +
         "span.msg-conversation-card__pill.t-14.t-black.t-bold.pr1"
 
-    let opportunityFetched = false
+    const chatElementTemplate =
+        "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
+        `.msg-conversations-container__pillar.ember-view:nth-of-type({{index}}) > ` +
+        "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
+        "a.ember-view.msg-conversation-listitem__link." +
+        "msg-conversations-container__convo-item-link.pl3"
+
     let conversationIds;
+    let conversationIdsFromPage = [];
+    let conversationElementsFromPage = [];
 
     for (let i = 1; i <= totalChats; i++) {
         // Check if element is group chat
@@ -466,47 +474,33 @@ async function addOpportunityButtonInMessaging() {
         element.style["height"] = "112px";
         element.style["padding"] = "12px 8px 35px 12px";
 
-        if (!opportunityFetched) {
-            // Get opportunity
-            console.log("====> Fetching opportunity messaging")
-            const opportunityData = await util.getOpportunity()
-            conversationIds = await util.extractConversationId(opportunityData["data"]);
-            console.log(conversationIds)
-            opportunityFetched = true
-        }
-
         // Fetch conversation id
-        const chatElement = document
-            .querySelector(
-                "li.msg-conversation-listitem.msg-conversations-container__convo-item" +
-                `.msg-conversations-container__pillar.ember-view:nth-of-type(${i.toString()}) > ` +
-                "div.msg-conversation-card.msg-conversations-container__pillar.ember-view > " +
-                "a.ember-view.msg-conversation-listitem__link." +
-                "msg-conversations-container__convo-item-link.pl3"
-            )
-            .getAttribute("href");
+        const chatElement = document.querySelector(
+            chatElementTemplate.replace('{{index}}', i.toString())).getAttribute("href");
 
         const chatElementParts = chatElement.split("/");
         const conversationId =
             chatElementParts[chatElementParts.indexOf("thread") + 1];
 
+        conversationIdsFromPage.push(conversationId)
+
         // Create "Opportunity" button to place
         const button = document.createElement("button");
+
+        conversationElementsFromPage.push(
+            {
+                opportunityButton: button,
+                conversationId: conversationId
+            }
+        )
+
         const textNode = document.createTextNode("Loading");
         button.appendChild(textNode);
         button.id = "opportunity-button-messaging";
 
-        let text, color;
-        if (conversationIds.includes(conversationId)) {
-            text = "Update"
-            color = "#88E000"
-        } else {
-            text = "Add";
-            color = "#0a66c2"
-        }
-
-        button.textContent = text
-        button.style["background-color"] = color
+        button.textContent = "-----";
+        button.style["background-color"] = '#d3d3d3';
+        button.disabled = true
 
         // Add onClick event function for "Opportunity" button
         button.onclick = async function onClickUpdateButton(event) {
@@ -517,15 +511,17 @@ async function addOpportunityButtonInMessaging() {
             button.style["background-color"] = '#d3d3d3';
 
             //Fetch public identifier
-            await util.sleep(100);
-            const publicUrl = document
-                .querySelector('a[data-control-name="topcard"]')
-                .getAttribute("href")
-                .split("/");
-            const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
-            console.log(publicIdentifier);
+            // await util.sleep(100);
+            // const publicUrl = document
+            //     .querySelector('a[data-control-name="topcard"]')
+            //     .getAttribute("href")
+            //     .split("/");
+            // const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
+            // console.log(publicIdentifier);
 
-            const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
+            console.log(conversationId)
+
+            const result = await util.addOpportunity({conversationId: conversationId})
 
             if (result) {
                 text = "Update"
@@ -542,7 +538,46 @@ async function addOpportunityButtonInMessaging() {
 
         // Add button inside element
         element.appendChild(button);
+
+        // Wait and delete button if it's not loaded in 10 seconds
+        deleteErrorLoadingButton(button);
     }
+
+    if (conversationIdsFromPage.length > 0) {
+        // Get opportunity
+        console.log("====> Fetching opportunity messaging")
+        const opportunityData = await util.getOpportunity(requestData = {conversationIds: conversationIdsFromPage})
+        conversationIds = await util.extractConversationId(opportunityData["data"]);
+        console.log(conversationIds)
+
+        for (const index in conversationElementsFromPage) {
+            let text, color;
+            if (conversationIds.includes(conversationElementsFromPage[index]["conversationId"])) {
+                text = "Update"
+                color = "#88E000"
+            } else {
+                text = "Add"
+                color = "#0a66c2"
+            }
+
+            conversationElementsFromPage[index]["opportunityButton"].textContent = text
+            conversationElementsFromPage[index]["opportunityButton"].style["background-color"] = color
+            conversationElementsFromPage[index]["opportunityButton"].disabled = false
+        }
+    }
+
+}
+
+/**
+ * Function for removing button if it is not loaded in 10 seconds
+ * @param buttonElement Handler of button element
+ */
+function deleteErrorLoadingButton(buttonElement) {
+    setTimeout(() => {
+        if (buttonElement.textContent === "-----") {
+            buttonElement.remove()
+        }
+    }, 10000)
 }
 
 async function checkForLoginPage() {
