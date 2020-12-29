@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://a0ad22839e47.ngrok.io",
+    serverUrl: "https://06644b62b014.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -98,7 +98,7 @@ var util = {
         }
 
         const response = await util.request(
-            method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
+            method = "GET", url = requestUrl, headers = requestHeaders, data = requestData)
 
         // console.log(response)
 
@@ -106,36 +106,24 @@ var util = {
     },
 
     /**
-     * Function for extracting public identifier from opportunity data
-     * @param {object[]} opportunityData
-     * @return {String[]} Public identifiers
+     * Function to get added opportunity conversation ids list
+     * @param {object} requestData data to be send when doing request
+     * @return {object[]} opportunity data
      */
-    extractPublicIdentifier: async function (opportunityData) {
-        let publicIdentifiers = [];
+    getOpportunityConversation: async function (requestData = {}) {
+        const requestUrl = util.serverUrl + '/conversation/get-conversationIdArr'
 
-        for (const index in opportunityData) {
-            publicIdentifiers.push(opportunityData[index].publicIdentifier)
+        const requestHeaders = {
+            "Authorization": await util.getValueFromStorage("token")
         }
 
-        return publicIdentifiers
+        const response = await util.request(
+            method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
+
+        // console.log(response)
+
+        return JSON.parse(response.responseText)
     },
-
-    /**
-     * Function for extracting public identifier from opportunity data
-     * @param {object[]} opportunityData
-     * @return {String[]} conversation Ids
-     */
-    extractConversationId: async function (opportunityData) {
-        let conversationIds = []
-
-        for (const index in opportunityData) {
-            if (opportunityData[index].conversationId) {
-                conversationIds.push(opportunityData[index].conversationId)
-            }
-        }
-
-        return conversationIds
-    }
 }
 
 //endregion
@@ -223,8 +211,7 @@ async function addOpportunityButtonInProfile() {
             if (!opportunityButton) {
                 // Get opportunity
                 console.log("Fetching opportunity profile")
-                const opportunityData = await util.getOpportunity()
-                const publicIdentifiers = await util.extractPublicIdentifier(opportunityData["data"]);
+                const publicIdentifiers = await util.getOpportunity()
                 console.log(publicIdentifiers)
 
                 // Fetch public identifier of particular user
@@ -318,8 +305,7 @@ async function addOpportunityButtonInConnection() {
             if (!opportunityFetched) {
                 // Get opportunity
                 console.log("====> Fetching opportunity connections")
-                const opportunityData = await util.getOpportunity()
-                publicIdentifiers = await util.extractPublicIdentifier(opportunityData["data"]);
+                publicIdentifiers = await util.getOpportunity()
                 console.log(publicIdentifiers)
                 opportunityFetched = true
             }
@@ -546,8 +532,8 @@ async function addOpportunityButtonInMessaging() {
     if (conversationIdsFromPage.length > 0) {
         // Get opportunity
         console.log("====> Fetching opportunity messaging")
-        const opportunityData = await util.getOpportunity(requestData = {conversationIds: conversationIdsFromPage})
-        conversationIds = await util.extractConversationId(opportunityData["data"]);
+        console.log(conversationIdsFromPage)
+        conversationIds = await util.getOpportunityConversation(requestData = {conversationIdArr: conversationIdsFromPage})
         console.log(conversationIds)
 
         for (const index in conversationElementsFromPage) {
