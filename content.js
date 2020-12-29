@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://06644b62b014.ngrok.io",
+    serverUrl: "https://18e72aa41aa1.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -66,11 +66,7 @@ var util = {
      */
     addOpportunity: async function (opportunityData) {
         const requestUrl = util.serverUrl + '/opportunity/add-opportunity'
-
-        const requestData = {
-            "publicIdentifier": opportunityData["publicIdentifier"],
-        }
-
+        
         const requestHeaders = {
             "Authorization": await util.getValueFromStorage("token")
         }
@@ -79,7 +75,7 @@ var util = {
             method = "POST",
             url = requestUrl,
             headers = requestHeaders,
-            data = requestData
+            data = opportunityData
         )
 
         return response.status === 200;
@@ -211,7 +207,8 @@ async function addOpportunityButtonInProfile() {
             if (!opportunityButton) {
                 // Get opportunity
                 console.log("Fetching opportunity profile")
-                const publicIdentifiers = await util.getOpportunity()
+                let publicIdentifiers = await util.getOpportunity();
+                publicIdentifiers = publicIdentifiers["data"]
                 console.log(publicIdentifiers)
 
                 // Fetch public identifier of particular user
@@ -305,7 +302,8 @@ async function addOpportunityButtonInConnection() {
             if (!opportunityFetched) {
                 // Get opportunity
                 console.log("====> Fetching opportunity connections")
-                publicIdentifiers = await util.getOpportunity()
+                publicIdentifiers = await util.getOpportunity();
+                publicIdentifiers = publicIdentifiers["data"]
                 console.log(publicIdentifiers)
                 opportunityFetched = true
             }
@@ -534,6 +532,7 @@ async function addOpportunityButtonInMessaging() {
         console.log("====> Fetching opportunity messaging")
         console.log(conversationIdsFromPage)
         conversationIds = await util.getOpportunityConversation(requestData = {conversationIdArr: conversationIdsFromPage})
+        conversationIds = conversationIds["data"]
         console.log(conversationIds)
 
         for (const index in conversationElementsFromPage) {
