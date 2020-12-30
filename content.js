@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://18e72aa41aa1.ngrok.io",
+    serverUrl: "https://link.dev.gradlesol.com/app",
 
     /**
      * Function for putting static delay
