@@ -237,27 +237,27 @@ async function addOpportunityButtonInProfile() {
                     const button = document.createElement("button");
                     // const buttonIcon = document.createElement("img")
                     // buttonIcon.src = "https://ibb.co/tmCyJDC";
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Loading</span>`
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
                     button.id = "opportunity-button-profile";
 
                     if (publicIdentifiers.includes(publicIdentifier)) {
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Update</span>`
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
                     } else {
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Add</span>`
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
                     }
 
                     // Add onClick event function for "Opportunity" button
                     button.onclick = async function onClickUpdateButton() {
                         button.disabled = true
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Loading</span>`
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
                         console.log(publicIdentifier);
 
                         const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                         if (result) {
-                            button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Update</span>`
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
                         } else {
-                            button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Retry</span>`
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                         }
 
                         button.disabled = false
@@ -321,27 +321,27 @@ async function addOpportunityButtonInConnection() {
             if (opportunityButton == null) {
                 // Create "Opportunity" button to place
                 const button = document.createElement("button");
-                button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Loading</span>`
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
                 button.id = "opportunity-button-connection";
 
                 if (publicIdentifiers.includes(publicIdentifier)) {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Update</span>`
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
                 } else {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Add</span>`
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
                 }
 
                 // Add onClick event function for "Opportunity" button
                 button.onclick = async function onClickUpdateButton() {
                     button.disabled = true
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Loading</span>`
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
                     console.log(publicIdentifier);
 
                     const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                     if (result) {
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Update</span>`;
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`;
                     } else {
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Retry</span>`;
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`;
                     }
 
                     button.disabled = false
@@ -458,7 +458,7 @@ async function addOpportunityButtonInMessaging() {
 
         button.id = "opportunity-button-messaging";
 
-        button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>-----</span>`;
+        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>-----</span>`;
         button.disabled = true
 
         // Add onClick event function for "Opportunity" button
@@ -466,15 +466,15 @@ async function addOpportunityButtonInMessaging() {
             event.stopPropagation();
             event.preventDefault();
             button.disabled = true
-            button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Loading</span>`;
+            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`;
             console.log(conversationId)
 
             const result = await util.addOpportunity({conversationId: conversationId})
 
             if (result) {
-                button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Update</span>`;
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`;
             } else {
-                button.innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Retry</span>`;
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`;
             }
             button.disabled = false
         };
@@ -496,9 +496,9 @@ async function addOpportunityButtonInMessaging() {
 
         for (const index in conversationElementsFromPage) {
             if (conversationIds.includes(conversationElementsFromPage[index]["conversationId"])) {
-                conversationElementsFromPage[index]["opportunityButton"].innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Update</span>`;
+                conversationElementsFromPage[index]["opportunityButton"].innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`;
             } else {
-                conversationElementsFromPage[index]["opportunityButton"].innerHTML = `<img src="${chrome.extension.getURL('img/link.svg')}"/><span>Add</span>`;
+                conversationElementsFromPage[index]["opportunityButton"].innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`;
             }
 
             conversationElementsFromPage[index]["opportunityButton"].disabled = false
