@@ -6,12 +6,12 @@ async function resetValidation() {
     });
 }
 
-// resetValidation()
+resetValidation()
 
 //region UTILITIES
 
 let util = {
-    serverUrl: "https://88aa9d21a55c.ngrok.io",
+    serverUrl: "https://link.dev.gradlesol.com/app",
 
     /**
      * Function for putting static delay
@@ -81,7 +81,7 @@ async function checkForLinkedIn(tab) {
         });
     } else if (
         tab.url.includes(
-            "https://88aa9d21a55c.ngrok.io/linkedin-signin.html?token="
+            "https://link.dev.gradlesol.com/app/linkedin-signin.html?token="
         )
     ) {
         const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')

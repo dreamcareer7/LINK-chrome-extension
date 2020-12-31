@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://88aa9d21a55c.ngrok.io",
+    serverUrl: "https://link.dev.gradlesol.com/app",
 
     /**
      * Function for putting static delay
@@ -66,7 +66,7 @@ var util = {
      */
     addOpportunity: async function (opportunityData) {
         const requestUrl = util.serverUrl + '/opportunity/add-opportunity'
-
+        
         const requestHeaders = {
             "Authorization": await util.getValueFromStorage("token")
         }
