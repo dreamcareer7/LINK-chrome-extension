@@ -6,12 +6,12 @@ async function resetValidation() {
     });
 }
 
-resetValidation()
+// resetValidation()
 
 //region UTILITIES
 
 let util = {
-    serverUrl: "https://18e72aa41aa1.ngrok.io",
+    serverUrl: "https://88aa9d21a55c.ngrok.io",
 
     /**
      * Function for putting static delay
@@ -81,7 +81,7 @@ async function checkForLinkedIn(tab) {
         });
     } else if (
         tab.url.includes(
-            "https://18e72aa41aa1.ngrok.io/linkedin-signin.html?token="
+            "https://88aa9d21a55c.ngrok.io/linkedin-signin.html?token="
         )
     ) {
         const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')

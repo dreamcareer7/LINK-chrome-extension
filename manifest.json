@@ -3,13 +3,23 @@
   "name": "Linkedin monitor",
   "version": "1.0",
   "description": "Make a better observation",
+  "web_accessible_resources": [
+    "img/*.svg"
+  ],
   "background": {
-    "scripts": ["util.js", "background.js"]
+    "scripts": [
+      "util.js",
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
-      "css": ["styles.css"],
-      "matches": ["<all_urls>"]
+      "css": [
+        "styles.css"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "permissions": [

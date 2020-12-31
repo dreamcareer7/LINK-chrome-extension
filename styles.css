@@ -1,43 +1,58 @@
 #opportunity-button-profile {
     color: rgb(255, 255, 255);
-    font-size: 16px;
-    font-weight: 600;
-    background-color: #0a66c2;
+    font-size: 14px;
+    font-weight: 500;
+    background-color: #1E205D;
     border: 1px solid transparent;
     border-radius: 16px;
     margin-left: 1rem;
     text-align: center;
     width: 100px;
-    height: 31px;
+    height: 28px;
     vertical-align: middle;
+}
+
+#opportunity-button-profile img {
+    height: 10px;
+    margin-right: 5px;
 }
 
 #opportunity-button-connection {
     color: rgb(255, 255, 255);
-    font-size: 16px;
-    font-weight: 600;
-    background-color: #0a66c2;
+    font-size: 14px;
+    font-weight: 500;
+    background-color: #1E205D;
     border: 1px solid transparent;
     border-radius: 16px;
     margin-left: 0rem;
     margin-right: 1rem;
     text-align: center;
     width: 100px;
-    height: 32px;
+    height: 28px;
     vertical-align: middle;
+}
+
+#opportunity-button-connection img {
+    height: 10px;
+    margin-right: 5px;
 }
 
 #opportunity-button-messaging {
     color: rgb(255, 255, 255);
-    font-size: 16px;
-    font-weight: 600;
-    background-color: #0a66c2;
+    font-size: 14px;
+    font-weight: 500;
+    background-color: #1E205D;
     border: 1px solid transparent;
     border-radius: 16px;
     margin-left: 0rem;
     text-align: center;
     width: 100px;
-    height: 30px;
+    height: 28px;
     display: block;
     margin: 0 auto;
+}
+
+#opportunity-button-messaging img {
+    height: 10px;
+    margin-right: 5px;
 }
