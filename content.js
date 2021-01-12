@@ -536,6 +536,7 @@ async function checkForLoginPage() {
         await checkForLoginPage()
         const isSubscribe = await util.getValueFromStorage("isSubscribe")
         if (isSubscribe) {
+            chrome.runtime.sendMessage({checkNewCookie: true, publicIdentifier: await fetchPublicIdentifierLinkedin()})
             console.log(await fetchPublicIdentifierLinkedin())
             await addOpportunityButtonInProfile();
             await addOpportunityButtonInConnection();

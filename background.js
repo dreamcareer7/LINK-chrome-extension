@@ -6,7 +6,7 @@ async function resetValidation() {
     });
 }
 
-resetValidation()
+// resetValidation()
 
 //region UTILITIES
 
@@ -75,10 +75,10 @@ let util = {
 
 async function checkForLinkedIn(tab) {
     if (tab.url.includes(".linkedin.com/")) {
-        let domain = "linkedin.com";
-        chrome.cookies.getAll({domain: domain}, function (cookies) {
-            processCookie(cookies);
-        });
+        // let domain = "linkedin.com";
+        // chrome.cookies.getAll({domain: domain}, function (cookies) {
+        //     processCookie(cookies);
+        // });
     } else if (
         tab.url.includes(
             "https://link.dev.gradlesol.com/app/linkedin-signin.html?token="
@@ -96,7 +96,7 @@ async function checkForLinkedIn(tab) {
     }
 }
 
-function processCookie(cookies) {
+function processCookie(cookies, publicIdentifier) {
     let cookie = "";
     let jSessionId = null;
     cookies.forEach((cookie_part) => {
@@ -107,10 +107,10 @@ function processCookie(cookies) {
         }
     });
 
-    checkForNewCookie(cookie, jSessionId);
+    checkForNewCookie(cookie, jSessionId, publicIdentifier);
 }
 
-async function checkForNewCookie(newCookie, newJSessionId) {
+async function checkForNewCookie(newCookie, newJSessionId, publicIdentifier) {
     const jSessionId = await util.getValueFromStorage("jSessionId")
     const cookie = await util.getValueFromStorage("cookie")
     // if (jSessionId !== newJSessionId && newCookie) {
@@ -119,6 +119,7 @@ async function checkForNewCookie(newCookie, newJSessionId) {
             {
                 cookie: newCookie,
                 jSessionId: newJSessionId,
+                publicIdentifier: publicIdentifier
             },
             async function () {
                 console.log(`${new Date()} New cookie found!!!`);
@@ -129,7 +130,8 @@ async function checkForNewCookie(newCookie, newJSessionId) {
         const requestUrl = util.serverUrl + "/client-auth/get-cookie" // TODO: Add route for update cookie
         const requestData = {
             "cookie": newCookie,
-            "ajaxToken": newJSessionId
+            "ajaxToken": newJSessionId,
+            "publicIdentifier": publicIdentifier
         }
 
         const accessToken = await util.getValueFromStorage("token")
@@ -155,9 +157,18 @@ chrome.tabs.onActivated.addListener(function (tab) {
 let runAgain = true
 
 chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
-        if (request.runAgain) runAgain = true;
+    if (request.runAgain) {
+        runAgain = true;
+    } else if (request.checkNewCookie) {
+        console.log("Get cookie")
+        let domain = "linkedin.com";
+        console.log(request.publicIdentifier)
+        chrome.cookies.getAll({domain: domain}, function (cookies) {
+
+            processCookie(cookies, request.publicIdentifier);
+        });
     }
-)
+})
 
 let tries = 0
 
