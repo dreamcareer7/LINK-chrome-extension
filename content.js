@@ -94,7 +94,7 @@ var util = {
         }
 
         const response = await util.request(
-            method = "GET", url = requestUrl, headers = requestHeaders, data = requestData)
+            method = "PUT", url = requestUrl, headers = requestHeaders, data = requestData)
 
         // console.log(response)
 
@@ -204,27 +204,27 @@ async function addOpportunityButtonInProfile() {
 
         if (connectionType.textContent.trim().includes("1st")) {
 
+            // Fetch public identifier of particular user
+            let profileUrl = document.querySelector(
+                'a[data-control-name="contact_see_more"]'
+            );
+
+            if (profileUrl) {
+                profileUrl = profileUrl.getAttribute("href");
+            } else {
+                profileUrl = await fetchProfileUrlSalesNavigator();
+            }
+
+            const profileUrlParts = profileUrl.split("/");
+            const publicIdentifier =
+                profileUrlParts[profileUrlParts.indexOf("in") + 1];
+
             if (!opportunityButton) {
                 // Get opportunity
                 console.log("Fetching opportunity profile")
-                let publicIdentifiers = await util.getOpportunity();
+                let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
                 publicIdentifiers = publicIdentifiers["data"]
                 console.log(publicIdentifiers)
-
-                // Fetch public identifier of particular user
-                let profileUrl = document.querySelector(
-                    'a[data-control-name="contact_see_more"]'
-                );
-
-                if (profileUrl) {
-                    profileUrl = profileUrl.getAttribute("href");
-                } else {
-                    profileUrl = await fetchProfileUrlSalesNavigator();
-                }
-
-                const profileUrlParts = profileUrl.split("/");
-                const publicIdentifier =
-                    profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
                 const opportunityButton = document.querySelector(
                     "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile" +
@@ -293,13 +293,19 @@ async function addOpportunityButtonInConnection() {
                 // Collect all public identifiers from page
                 publicIdentifiers = []
                 for (let j = 1; j <= totalConnections; j++) {
-                    const profileUrl = document
-                        .querySelector(
-                            `${liClass}:nth-of-type(${i.toString()}) > a.mn-connection-card__picture.ember-view`
-                        )
-                        .getAttribute("href");
-                    const profileUrlParts = profileUrl.split("/");
-                    publicIdentifiers.push(profileUrlParts[profileUrlParts.indexOf("in") + 1])
+                    const opportunityButton = document.querySelector(
+                        `${liClass}:nth-of-type(${j.toString()}) > div.mn-connection-card__action-container > #opportunity-button-connection`
+                    );
+
+                    if (!opportunityButton) {
+                        const profileUrl = document
+                            .querySelector(
+                                `${liClass}:nth-of-type(${j.toString()}) > a.mn-connection-card__picture.ember-view`
+                            )
+                            .getAttribute("href");
+                        const profileUrlParts = profileUrl.split("/");
+                        publicIdentifiers.push(profileUrlParts[profileUrlParts.indexOf("in") + 1])
+                    }
                 }
 
                 // Get opportunity
@@ -582,6 +588,7 @@ async function addOpportunityButtonUnderChat() {
     if (conversationIdsFromPage.length > 0) {
         // Get opportunity
         console.log("====> Fetching opportunity messaging")
+        console.log(conversationIdsFromPage);
         conversationIds = await util.getOpportunityConversation({conversationIdArr: conversationIdsFromPage})
         conversationIds = conversationIds["data"]
         console.log(conversationIds)
@@ -628,9 +635,9 @@ async function checkForLoginPage() {
         await checkForLoginPage()
         const isSubscribe = await util.getValueFromStorage("isSubscribe")
         if (isSubscribe) {
-            console.log("Sending command check cookie")
+            // console.log("Sending command check cookie")
             chrome.runtime.sendMessage({checkNewCookie: true, publicIdentifier: await fetchPublicIdentifierLinkedin()})
-            console.log(await fetchPublicIdentifierLinkedin())
+            // console.log(await fetchPublicIdentifierLinkedin())
             await addOpportunityButtonInProfile();
             await addOpportunityButtonInConnection();
             await addOpportunityButtonInMessaging(1);
