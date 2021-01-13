@@ -182,7 +182,10 @@ async function runContentScript() {
         });
     }
 
-    if (tries > 10) runAgain = true;
+    if (tries > 10) {
+        tries = 0;
+        runAgain = true;
+    }
     tries++;
     await util.sleep(1000);
     console.log("Running Again")

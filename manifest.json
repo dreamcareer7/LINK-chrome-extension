@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Linkedin monitor",
+  "name": "Jayla Link Fluencer",
   "version": "1.0",
-  "description": "Make a better observation",
+  "description": "Make better opportunity",
   "web_accessible_resources": [
     "img/*.svg"
   ],
@@ -18,7 +18,7 @@
         "styles.css"
       ],
       "matches": [
-        "<all_urls>"
+        "https://www.linkedin.com/*"
       ]
     }
   ],
@@ -26,11 +26,11 @@
     "storage",
     "cookies",
     "webNavigation",
-    "<all_urls>"
+    "https://www.linkedin.com/*",
+    "https://link.dev.gradlesol.com/app/*"
   ],
   "browser_action": {
-    "default_icon": "img/spider.png",
-    "default_popup": "popup.html",
-    "default_title": "A popup will come here"
+    "default_icon": "img/defaultIcon.png",
+    "default_popup": "popup.html"
   }
 }

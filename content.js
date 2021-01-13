@@ -107,7 +107,7 @@ var util = {
      * @return {object[]} opportunity data
      */
     getOpportunityConversation: async function (requestData = {}) {
-        const requestUrl = util.serverUrl + '/conversation/get-conversationIdArr'
+        const requestUrl = util.serverUrl + '/conversation/get-conversation-id-arr'
 
         const requestHeaders = {
             "Authorization": await util.getValueFromStorage("token")
@@ -489,8 +489,7 @@ async function addOpportunityButtonInMessaging() {
     if (conversationIdsFromPage.length > 0) {
         // Get opportunity
         console.log("====> Fetching opportunity messaging")
-        console.log(conversationIdsFromPage)
-        conversationIds = await util.getOpportunityConversation(requestData = {conversationIdArr: conversationIdsFromPage})
+        conversationIds = await util.getOpportunityConversation({conversationIdArr: conversationIdsFromPage})
         conversationIds = conversationIds["data"]
         console.log(conversationIds)
 
@@ -536,6 +535,7 @@ async function checkForLoginPage() {
         await checkForLoginPage()
         const isSubscribe = await util.getValueFromStorage("isSubscribe")
         if (isSubscribe) {
+            console.log("Sending command check cookie")
             chrome.runtime.sendMessage({checkNewCookie: true, publicIdentifier: await fetchPublicIdentifierLinkedin()})
             console.log(await fetchPublicIdentifierLinkedin())
             await addOpportunityButtonInProfile();
