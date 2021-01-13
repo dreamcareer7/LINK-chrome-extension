@@ -66,7 +66,7 @@ var util = {
      */
     addOpportunity: async function (opportunityData) {
         const requestUrl = util.serverUrl + '/opportunity/add-opportunity'
-        
+
         const requestHeaders = {
             "Authorization": await util.getValueFromStorage("token")
         }
@@ -354,7 +354,89 @@ async function addOpportunityButtonInConnection() {
     }
 }
 
-async function addOpportunityButtonInMessaging() {
+async function addOpportunityButtonInMessaging(location = 1) {
+    if (location === 1) {
+        await addOpportunityButtonInChatSection();
+    } else if (location === 2) {
+        await addOpportunityButtonUnderChat();
+    } else {
+        console.error(`No Location ${location.toString()} exists`)
+    }
+}
+
+
+async function addOpportunityButtonInChatSection() {
+    const element = document.querySelector('div.shared-title-bar__title.msg-title-bar__title-bar-title')
+
+    const chatElement = document.querySelector('a[data-control-name="topcard"]')
+    if (chatElement) {
+        const opportunityButton = document.querySelector(
+            'div.shared-title-bar__title.msg-title-bar__title-bar-title > #opportunity-button-messaging')
+
+        // Fetch public identifier
+        const publicUrl = document
+            .querySelector('a[data-control-name="topcard"]')
+            .getAttribute("href")
+            .split("/");
+        const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
+
+        console.log(publicIdentifier);
+
+        const previousPublicIdentifier = await util.getValueFromStorage('previousPublicIdentifier');
+
+        if (previousPublicIdentifier !== publicIdentifier) {
+            chrome.storage.sync.set({previousPublicIdentifier: publicIdentifier})
+
+            if (opportunityButton) {
+                opportunityButton.parentElement.removeChild(opportunityButton);
+            }
+        }
+
+        if (!opportunityButton) {
+            // Get opportunity
+            console.log("Fetching opportunity profile")
+            let publicIdentifiers = await util.getOpportunity();
+            publicIdentifiers = publicIdentifiers["data"]
+            console.log(publicIdentifiers)
+
+            // Create "Opportunity" button to place
+            const button = document.createElement("button");
+            // const buttonIcon = document.createElement("img")
+            // buttonIcon.src = "https://ibb.co/tmCyJDC";
+            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+            button.id = "opportunity-button-messaging";
+
+            if (publicIdentifiers.includes(publicIdentifier)) {
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+            } else {
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
+            }
+
+            // Add onClick event function for "Opportunity" button
+            button.onclick = async function onClickUpdateButton() {
+                button.disabled = true
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+                console.log(publicIdentifier);
+
+                const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
+
+                if (result) {
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+                } else {
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
+                }
+
+                button.disabled = false
+            };
+
+            // Add button inside element
+            element.insertBefore(button, element.lastElementChild);
+        }
+    }
+}
+
+
+async function addOpportunityButtonUnderChat() {
     // Fetch total chats count to loop through
     const totalChats = document.getElementsByClassName(
         "msg-conversation-listitem msg-conversations-container__convo-item msg-conversations-container__pillar ember-view"
@@ -540,7 +622,7 @@ async function checkForLoginPage() {
             console.log(await fetchPublicIdentifierLinkedin())
             await addOpportunityButtonInProfile();
             await addOpportunityButtonInConnection();
-            await addOpportunityButtonInMessaging();
+            await addOpportunityButtonInMessaging(1);
         }
     }
 
