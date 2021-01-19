@@ -162,8 +162,7 @@ async function fetchProfileUrlSalesNavigator() {
         authority: "www.linkedin.com",
         accept: "application/json, */*; q=0.01",
         "x-li-lang": "en_US",
-        "x-li-identity":
-            "dXJuOmxpOmVudGVycHJpc2VQcm9maWxlOih1cm46bGk6ZW50ZXJwcmlzZUFjY291bnQ6ODY0MjAwNTcsMTEyOTE1NDc3KQ",
+        "x-li-identity": "dXJuOmxpOmVudGVycHJpc2VQcm9maWxlOih1cm46bGk6ZW50ZXJwcmlzZUFjY291bnQ6ODY0MjAwNTcsMTEyOTE1NDc3KQ",
         "x-li-page-instance": "urn:li:page:d_sales2_profile;ld3Dc2I3Q6O3Md395JswLg==",
         "content-type": "application/json",
         "x-restli-protocol-version": "2.0.0",
@@ -606,6 +605,75 @@ async function addOpportunityButtonUnderChat() {
 
 }
 
+async function addOpportunityButtonInChatWindow() {
+    const chatElements = document.querySelectorAll(
+        'div.msg-overlay-conversation-bubble--is-active, div.msg-overlay-conversation-bubble--default-inactive');
+
+    if (chatElements.length > 0) {
+        for (const index in chatElements) {
+            const chatElement = chatElements[index];
+
+            const opportunityButton = chatElement.querySelector(
+                'section.msg-overlay-bubble-header__controls.display-flex.align-items-center > ' +
+                '#opportunity-button-chat')
+
+            if (!opportunityButton) {
+
+                const publicUrl = chatElement.querySelector(
+                    'a.profile-card-one-to-one__profile-link.ember-view')
+                    .getAttribute("href")
+                    .split("/");
+
+                const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
+                console.log(publicIdentifier)
+
+                // Get opportunity
+                console.log("Fetching opportunity profile")
+                let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
+                publicIdentifiers = publicIdentifiers["data"]
+                console.log(publicIdentifiers)
+
+                const element = chatElement.querySelector(
+                    'section.msg-overlay-bubble-header__controls.display-flex.align-items-center')
+
+                // Create "Opportunity" button to place
+                const button = document.createElement("button");
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+                button.id = "opportunity-button-chat";
+
+                if (publicIdentifiers.includes(publicIdentifier)) {
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+                } else {
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
+                }
+
+                // Add onClick event function for "Opportunity" button
+                button.onclick = async function onClickUpdateButton(event) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    button.disabled = true
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+                    console.log(publicIdentifier);
+
+                    const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
+
+                    if (result) {
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+                    } else {
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
+                    }
+
+                    button.disabled = false
+                };
+
+                // Add button inside element
+                element.insertBefore(button, element.firstElementChild);
+
+            }
+        }
+    }
+}
+
 /**
  * Function for removing button if it is not loaded in 10 seconds
  * @param buttonElement Handler of button element
@@ -632,7 +700,7 @@ async function checkForLoginPage() {
 (async function () {
     const pageLink = document.URL;
     if (pageLink.includes(".linkedin.com/")) {
-        await checkForLoginPage()
+        // await checkForLoginPage()
         const isSubscribe = await util.getValueFromStorage("isSubscribe")
         if (isSubscribe) {
             // console.log("Sending command check cookie")
@@ -641,6 +709,7 @@ async function checkForLoginPage() {
             await addOpportunityButtonInProfile();
             await addOpportunityButtonInConnection();
             await addOpportunityButtonInMessaging(1);
+            await addOpportunityButtonInChatWindow();
         }
     }
 

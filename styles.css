@@ -56,3 +56,23 @@
     height: 10px;
     margin-right: 5px;
 }
+
+#opportunity-button-chat {
+    color: rgb(255, 255, 255);
+    font-size: 10px;
+    font-weight: 500;
+    background-color: #1E205D;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    margin-left: 0rem;
+    text-align: center;
+    width: 80px;
+    height: 20px;
+    display: block;
+    margin: 0 auto;
+}
+
+#opportunity-button-chat img {
+    height: 7px;
+    margin-right: 5px;
+}
