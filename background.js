@@ -79,14 +79,25 @@ async function checkForLinkedIn(tab) {
             "https://link.dev.gradlesol.com/app/linkedin-signin.html?token="
         )
     ) {
-        const token = tab.url.split('?')[1].split('&')[0].replace('token=', '')
+        const queryParts = tab.url.split('?')[1].split('&')
+        let queryParams = {}
+
+        for (const index in queryParts) {
+            queryParams[queryParts[index].split('=')[0]] = queryParts[index].split('=')[1]
+        }
+
         console.log(token)
         chrome.storage.sync.set({
-                token: token,
+                token: queryParams["token"],
                 isSubscribe: true,
             }, async function () {
                 console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
-                chrome.browserAction.setPopup({popup: "loggedIn.html"});
+
+                if (queryParams["is"] === 1) {
+                    chrome.browserAction.setPopup({popup: "loggedIn.html"});
+                } else {
+                    chrome.browserAction.setPopup({popup: "subscribe.html"});
+                }
             }
         );
     }
