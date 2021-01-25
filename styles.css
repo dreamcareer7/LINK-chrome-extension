@@ -1,3 +1,12 @@
+:root {
+    --primary: #07084B;
+    --secondary: #f9f9f9;
+    --success: #469A1F;
+    --gray: #999999;
+    --black-font: #464646;
+    --gray-font: #666666
+}
+
 #opportunity-button-profile {
     color: rgb(255, 255, 255);
     font-size: 16px;
@@ -75,4 +84,20 @@
 #opportunity-button-chat img {
     height: 7px;
     margin-right: 5px;
+}
+
+.main-container {
+    height: 250px;
+    width: 250px;
+}
+
+.header {
+    position: relative;
+    height: 50px;
+    padding: 20px;
+    background-color: var(--primary);
+}
+
+.header img {
+    height: 100%;
 }
