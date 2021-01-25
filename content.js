@@ -613,62 +613,82 @@ async function addOpportunityButtonInChatWindow() {
         for (const index in chatElements) {
             const chatElement = chatElements[index];
 
-            const opportunityButton = chatElement.querySelector(
-                'section.msg-overlay-bubble-header__controls.display-flex.align-items-center > ' +
-                '#opportunity-button-chat')
+            try {
+                const opportunityButton = chatElement.querySelector(
+                    'section.msg-overlay-bubble-header__controls.display-flex.align-items-center > ' +
+                    '#opportunity-button-chat')
 
-            if (!opportunityButton) {
+                if (!opportunityButton) {
 
-                const publicUrl = chatElement.querySelector(
-                    'a.profile-card-one-to-one__profile-link.ember-view')
-                    .getAttribute("href")
-                    .split("/");
+                    const publicUrlElement = chatElement.querySelector(
+                        'a.profile-card-one-to-one__profile-link.ember-view')
 
-                const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
-                console.log(publicIdentifier)
+                    let publicIdentifier;
 
-                // Get opportunity
-                console.log("Fetching opportunity profile")
-                let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
-                publicIdentifiers = publicIdentifiers["data"]
-                console.log(publicIdentifiers)
+                    if (!publicUrlElement) {
+                        console.log('Not Found');
+                        const personalPublicIdentifier = await fetchPublicIdentifierLinkedin()
+                        const publicUrlElements = chatElement.querySelectorAll('a[data-control-name="view_profile"]')
 
-                const element = chatElement.querySelector(
-                    'section.msg-overlay-bubble-header__controls.display-flex.align-items-center')
+                        for (const index in publicUrlElements) {
+                            const publicUrl = publicUrlElements[index].getAttribute("href").split("/");
+                            publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
 
-                // Create "Opportunity" button to place
-                const button = document.createElement("button");
-                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
-                button.id = "opportunity-button-chat";
+                            if (personalPublicIdentifier !== publicIdentifier) break;
+                        }
 
-                if (publicIdentifiers.includes(publicIdentifier)) {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
-                } else {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
-                }
-
-                // Add onClick event function for "Opportunity" button
-                button.onclick = async function onClickUpdateButton(event) {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    button.disabled = true
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
-                    console.log(publicIdentifier);
-
-                    const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
-
-                    if (result) {
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
                     } else {
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
+                        console.log("Found");
+                        const publicUrl = publicUrlElement.getAttribute("href").split("/");
+                        publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
                     }
 
-                    button.disabled = false
-                };
+                    console.log(publicIdentifier)
 
-                // Add button inside element
-                element.insertBefore(button, element.firstElementChild);
+                    // Get opportunity
+                    console.log("Fetching opportunity profile")
+                    let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
+                    publicIdentifiers = publicIdentifiers["data"]
+                    console.log(publicIdentifiers)
 
+                    const element = chatElement.querySelector(
+                        'section.msg-overlay-bubble-header__controls.display-flex.align-items-center')
+
+                    // Create "Opportunity" button to place
+                    const button = document.createElement("button");
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+                    button.id = "opportunity-button-chat";
+
+                    if (publicIdentifiers.includes(publicIdentifier)) {
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+                    } else {
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
+                    }
+
+                    // Add onClick event function for "Opportunity" button
+                    button.onclick = async function onClickUpdateButton(event) {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        button.disabled = true
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+                        console.log(publicIdentifier);
+
+                        const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
+
+                        if (result) {
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+                        } else {
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
+                        }
+
+                        button.disabled = false
+                    };
+
+                    // Add button inside element
+                    element.insertBefore(button, element.firstElementChild);
+
+                }
+            } catch (err) {
             }
         }
     }

@@ -91,6 +91,7 @@ async function checkForLinkedIn(tab) {
                 isSubscribe: true,
             }, async function () {
                 console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
+                chrome.browserAction.setPopup({popup: "loggedIn.html"});
             }
         );
     }
