@@ -74,12 +74,7 @@ let util = {
 //endregion
 
 async function checkForLinkedIn(tab) {
-    if (tab.url.includes(".linkedin.com/")) {
-        // let domain = "linkedin.com";
-        // chrome.cookies.getAll({domain: domain}, function (cookies) {
-        //     processCookie(cookies);
-        // });
-    } else if (
+    if (
         tab.url.includes(
             "https://link.dev.gradlesol.com/app/linkedin-signin.html?token="
         )
