@@ -8,11 +8,11 @@
     body {
         margin: 0;
         overflow: hidden;
-        font-family: 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     }
 
     body * {
         box-sizing: border-box;
+        font-family: 'Roboto', sans-serif !important;
     }
 
     .main-container {
@@ -63,6 +63,7 @@
     .button {
         height: 40px;
         width: 100%;
+        font-size: 14px;
         font-weight: 500;
         text-transform: uppercase;
         border-radius: 20px;
@@ -78,7 +79,7 @@
     }
 
     .border-button {
-        margin-top: 10px;
+        margin-top: 8px;
         border: 1px solid #cccccc;
         color: #999999;
         background-color: #ffffff;
@@ -104,7 +105,7 @@
 <body class="main-container">
 <div class="header">
     <img alt="Linkfluencer" class="logo" src="img/linkfluencer.png"/>
-    <div class="close">
+    <div name="close" class="close">
         <img src="img/close.svg"/>
     </div>
 </div>
