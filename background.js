@@ -86,17 +86,17 @@ async function checkForLinkedIn(tab) {
             queryParams[queryParts[index].split('=')[0]] = queryParts[index].split('=')[1]
         }
 
-        console.log(token)
         chrome.storage.sync.set({
                 token: queryParams["token"],
                 isSubscribe: true,
             }, async function () {
                 console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
-
-                if (queryParams["is"] === 1) {
+                if (queryParams["is"] === '1') {
                     chrome.browserAction.setPopup({popup: "loggedIn.html"});
+                    window.location.href = "loggedIn.html";
                 } else {
                     chrome.browserAction.setPopup({popup: "subscribe.html"});
+                    window.location.href = "subscribe.html";
                 }
             }
         );
@@ -167,7 +167,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     if (request.runAgain) {
         runAgain = true;
     } else if (request.checkNewCookie) {
-        console.log("Get cookie")
+        // console.log("Get cookie")
         let domain = "linkedin.com";
         console.log(request.publicIdentifier)
         chrome.cookies.getAll({domain: domain}, function (cookies) {
@@ -183,7 +183,7 @@ async function runContentScript() {
     if (runAgain && (await util.getValueFromStorage("isSubscribe"))) {
         runAgain = false
         tries = 0
-        console.log("running content script")
+        // console.log("running content script")
         chrome.tabs.executeScript(tabId, {file: "content.js"}, async (_) => {
             if (chrome.runtime.lastError) runAgain = true;
         });
@@ -195,7 +195,7 @@ async function runContentScript() {
     }
     tries++;
     await util.sleep(1000);
-    console.log("Running Again")
+    // console.log("Running Again")
     return runContentScript();
 }
 
