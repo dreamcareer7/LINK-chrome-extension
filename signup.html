@@ -53,10 +53,6 @@
         text-align: center;
     }
 
-    .content-container span {
-        width: 85%;
-    }
-
     .button {
         height: 40px;
         width: 100%;
@@ -97,6 +93,18 @@
         object-position: center;
     }
 
+    .whoops-image {
+        height: 50px;
+        margin: 30px 0 10px 0;
+    }
+
+    .whoops-title {
+        margin-bottom: 5px;
+        font-size: 20px;
+        font-weight: 700;
+        color: #666666;
+    }
+
 </style>
 <body class="main-container">
 <div class="header">
@@ -112,11 +120,15 @@
         <div>Director, Magnateck Inc.</div>
     </div>
 
+<img src="img/notification.svg" class="whoops-image"/>
+    <div class="whoops-title">WHOOPS!</div>
+    <div>It looks like you're not a Jayla subscriber, click the button below to get started</div>
+
     <button
             class="button success-button"
             name="dashboard"
     >
-       jayla dashboard
+        sign up now
     </button>
     <button
             class="button border-button"
