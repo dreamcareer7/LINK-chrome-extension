@@ -25,7 +25,7 @@ var util = {
             // Add event handler for request
             xhr.addEventListener("readystatechange", function () {
                 if (this.readyState === 4) {
-                    console.log(this.status)
+                    // console.log(this.status)
                     resolve(this);
                 }
             });
@@ -137,9 +137,12 @@ function fetchPublicIdentifierLinkedin() {
     }
 }
 
-async function fetchProfileUrlSalesNavigator() {
+async function fetchProfileUrlSalesNavigator(profileUrl=null) {
     // Create request url
-    const urlParts = document.URL.split("/");
+    if (profileUrl === null) {
+        profileUrl = document.URL
+    }
+    const urlParts = profileUrl.split("/");
 
     const searchData = urlParts[urlParts.indexOf("people") + 1]
         .split("?")[0]
@@ -205,10 +208,10 @@ async function addOpportunityButtonInLinkedinProfile() {
 
             if (!opportunityButton) {
                 // Get opportunity
-                console.log("Fetching opportunity profile")
+                // console.log("Fetching opportunity profile")
                 let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
                 publicIdentifiers = publicIdentifiers["data"]
-                console.log(publicIdentifiers)
+                // console.log(publicIdentifiers)
 
                 const opportunityButton = document.querySelector(
                     "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile");
@@ -230,7 +233,7 @@ async function addOpportunityButtonInLinkedinProfile() {
                     button.onclick = async function onClickUpdateButton() {
                         button.disabled = true
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
-                        console.log(publicIdentifier);
+                        // console.log(publicIdentifier);
 
                         const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
@@ -285,10 +288,10 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
                      profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
                 // Get opportunity
-                console.log("Fetching opportunity profile")
+                // console.log("Fetching opportunity profile")
                 let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
                 publicIdentifiers = publicIdentifiers["data"]
-                console.log(publicIdentifiers)
+                // console.log(publicIdentifiers)
 
                 const opportunityButton = document.querySelector(
                     "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > " +
@@ -311,7 +314,7 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
                     button.onclick = async function onClickUpdateButton() {
                         button.disabled = true
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
-                        console.log(publicIdentifier);
+                        // console.log(publicIdentifier);
 
                         const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
@@ -370,11 +373,11 @@ async function addOpportunityButtonInConnection() {
                 }
 
                 // Get opportunity
-                console.log("====> Fetching opportunity connections")
-                console.log("Found public identifiers from page: ", publicIdentifiers)
+                // console.log("====> Fetching opportunity connections")
+                // console.log("Found public identifiers from page: ", publicIdentifiers)
                 publicIdentifiers = await util.getOpportunity({publicIdentifierArr: publicIdentifiers});
                 publicIdentifiers = publicIdentifiers["data"]
-                console.log("Public identifiers with opportunity", publicIdentifiers)
+                // console.log("Public identifiers with opportunity", publicIdentifiers)
                 opportunityFetched = true
             }
 
@@ -414,7 +417,7 @@ async function addOpportunityButtonInConnection() {
                 button.onclick = async function onClickUpdateButton() {
                     button.disabled = true
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
-                    console.log(publicIdentifier);
+                    // console.log(publicIdentifier);
 
                     const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
@@ -444,39 +447,30 @@ async function addOpportunityButtonInMessaging(location = 1) {
     }
 }
 
-async function addOpportunityButtonInChatSection() {
-    const element = document.querySelector('div.shared-title-bar__title.msg-title-bar__title-bar-title')
+async function addOpportunityButtonInSalesNavigatorChatSection() {
+    const element = document.querySelector(
+        'header.thread__header.text-align-right.border-bottom.flex.align-items-center.' +
+        'justify-flex-end.box-sizing-border-box.background-color-white')
 
-    const chatElement = document.querySelector('a[data-control-name="topcard"]')
-    if (chatElement) {
-        const opportunityButton = document.querySelector(
-            'div.shared-title-bar__title.msg-title-bar__title-bar-title > #opportunity-button-messaging')
-
-        // Fetch public identifier
-        const publicUrl = document
-            .querySelector('a[data-control-name="topcard"]')
-            .getAttribute("href")
-            .split("/");
-        const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
-
-        console.log(publicIdentifier);
-
-        const previousPublicIdentifier = await util.getValueFromStorage('previousPublicIdentifier');
-
-        if (previousPublicIdentifier !== publicIdentifier) {
-            chrome.storage.sync.set({previousPublicIdentifier: publicIdentifier})
-
-            if (opportunityButton) {
-                opportunityButton.parentElement.removeChild(opportunityButton);
-            }
-        }
+    if (element) {
+        const opportunityButton = element.querySelector('#opportunity-button-messaging')
 
         if (!opportunityButton) {
+            let profileLink;
+            try {
+                profileLink = document.querySelector('a[data-control-name="view_profile"]').getAttribute('href')
+            } catch(e) {
+                return
+            }
+            const profileUrl = await fetchProfileUrlSalesNavigator(profileLink)
+            const profileUrlParts = profileUrl.split("/");
+            const publicIdentifier = profileUrlParts[profileUrlParts.indexOf("in") + 1];
+
             // Get opportunity
-            console.log("Fetching opportunity profile")
+            // console.log("Fetching opportunity in sales navigator chat section")
             let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
             publicIdentifiers = publicIdentifiers["data"]
-            console.log(publicIdentifiers)
+            // console.log(publicIdentifiers)
 
             // Create "Opportunity" button to place
             const button = document.createElement("button");
@@ -495,7 +489,84 @@ async function addOpportunityButtonInChatSection() {
             button.onclick = async function onClickUpdateButton() {
                 button.disabled = true
                 button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
-                console.log(publicIdentifier);
+                // console.log(publicIdentifier);
+
+                const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
+
+                if (result) {
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+                } else {
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
+                }
+
+                button.disabled = false
+            };
+
+            // Add button inside element
+            element.insertBefore(button, element.lastElementChild);
+        }
+    }
+}
+async function addOpportunityButtonInSaleNavigatorMessaging(location = 1) {
+    if (location === 1) {
+        await addOpportunityButtonInSalesNavigatorChatSection();
+    }else {
+        console.error(`No Location ${location.toString()} exists`)
+    }
+}
+
+async function addOpportunityButtonInChatSection() {
+    const element = document.querySelector('div.shared-title-bar__title.msg-title-bar__title-bar-title')
+
+    const chatElement = document.querySelector('a[data-control-name="topcard"]')
+    if (chatElement) {
+        const opportunityButton = document.querySelector(
+            'div.shared-title-bar__title.msg-title-bar__title-bar-title > #opportunity-button-messaging')
+
+        // Fetch public identifier
+        const publicUrl = document
+            .querySelector('a[data-control-name="topcard"]')
+            .getAttribute("href")
+            .split("/");
+        const publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
+
+        // console.log(publicIdentifier);
+
+        const previousPublicIdentifier = await util.getValueFromStorage('previousPublicIdentifier');
+
+        if (previousPublicIdentifier !== publicIdentifier) {
+            chrome.storage.sync.set({previousPublicIdentifier: publicIdentifier})
+
+            if (opportunityButton) {
+                opportunityButton.parentElement.removeChild(opportunityButton);
+            }
+        }
+
+        if (!opportunityButton) {
+            // Get opportunity
+            // console.log("Fetching opportunity profile")
+            let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
+            publicIdentifiers = publicIdentifiers["data"]
+            // console.log(publicIdentifiers)
+
+            // Create "Opportunity" button to place
+            const button = document.createElement("button");
+            // const buttonIcon = document.createElement("img")
+            // buttonIcon.src = "https://ibb.co/tmCyJDC";
+            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+            button.id = "opportunity-button-messaging";
+
+            if (publicIdentifiers.includes(publicIdentifier)) {
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+            } else {
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
+            }
+
+            // Add onClick event function for "Opportunity" button
+            button.onclick = async function onClickUpdateButton() {
+                button.disabled = true
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+                // console.log(publicIdentifier);
 
                 const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
@@ -627,7 +698,7 @@ async function addOpportunityButtonUnderChat() {
             event.preventDefault();
             button.disabled = true
             button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`;
-            console.log(conversationId)
+            // console.log(conversationId)
 
             const result = await util.addOpportunity({conversationId: conversationId})
 
@@ -648,11 +719,11 @@ async function addOpportunityButtonUnderChat() {
 
     if (conversationIdsFromPage.length > 0) {
         // Get opportunity
-        console.log("====> Fetching opportunity messaging")
-        console.log(conversationIdsFromPage);
+        // console.log("====> Fetching opportunity messaging")
+        // console.log(conversationIdsFromPage);
         conversationIds = await util.getOpportunityConversation({conversationIdArr: conversationIdsFromPage})
         conversationIds = conversationIds["data"]
-        console.log(conversationIds)
+        // console.log(conversationIds)
 
         for (const index in conversationElementsFromPage) {
             if (conversationIds.includes(conversationElementsFromPage[index]["conversationId"])) {
@@ -688,7 +759,7 @@ async function addOpportunityButtonInChatWindow() {
                     let publicIdentifier;
 
                     if (!publicUrlElement) {
-                        console.log('Not Found');
+                        // console.log('Not Found');
                         const personalPublicIdentifier = await fetchPublicIdentifierLinkedin()
                         const publicUrlElements = chatElement.querySelectorAll('a[data-control-name="view_profile"]')
 
@@ -700,18 +771,18 @@ async function addOpportunityButtonInChatWindow() {
                         }
 
                     } else {
-                        console.log("Found");
+                        // console.log("Found");
                         const publicUrl = publicUrlElement.getAttribute("href").split("/");
                         publicIdentifier = publicUrl[publicUrl.indexOf("in") + 1];
                     }
 
-                    console.log(publicIdentifier)
+                    // console.log(publicIdentifier)
 
                     // Get opportunity
-                    console.log("Fetching opportunity profile")
+                    // console.log("Fetching opportunity profile")
                     let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
                     publicIdentifiers = publicIdentifiers["data"]
-                    console.log(publicIdentifiers)
+                    // console.log(publicIdentifiers)
 
                     const element = chatElement.querySelector(
                         'section.msg-overlay-bubble-header__controls.display-flex.align-items-center')
@@ -733,7 +804,7 @@ async function addOpportunityButtonInChatWindow() {
                         event.preventDefault();
                         button.disabled = true
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
-                        console.log(publicIdentifier);
+                        // console.log(publicIdentifier);
 
                         const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
@@ -799,6 +870,7 @@ async function checkForLoginPage() {
             await addOpportunityButtonInSalesNavigatorProfile();
             await addOpportunityButtonInConnection();
             await addOpportunityButtonInMessaging(1);
+            await addOpportunityButtonInSaleNavigatorMessaging(1);
             await addOpportunityButtonInChatWindow();
         }
     }

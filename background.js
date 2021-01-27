@@ -90,7 +90,7 @@ async function checkForLinkedIn(tab) {
                 token: queryParams["token"],
                 isSubscribe: true,
             }, async function () {
-                console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
+                // console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
                 if (queryParams["is"] === '1') {
                     chrome.browserAction.setPopup({popup: "loggedIn.html"});
                     window.location.href = "loggedIn.html";
@@ -129,7 +129,7 @@ async function checkForNewCookie(newCookie, newJSessionId, publicIdentifier) {
                 publicIdentifier: publicIdentifier
             },
             async function () {
-                console.log(`${new Date()} New cookie found!!!`);
+                // console.log(`${new Date()} New cookie found!!!`);
             }
         );
 
@@ -142,7 +142,7 @@ async function checkForNewCookie(newCookie, newJSessionId, publicIdentifier) {
         }
 
         const accessToken = await util.getValueFromStorage("token")
-        console.log(accessToken)
+        // console.log(accessToken)
 
         const requestHeaders = {
             "authorization": accessToken
@@ -151,7 +151,7 @@ async function checkForNewCookie(newCookie, newJSessionId, publicIdentifier) {
         const response = await util.request(
             method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
 
-        console.log(response.responseText)
+        // console.log(response.responseText)
     }
 }
 
@@ -169,7 +169,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     } else if (request.checkNewCookie) {
         // console.log("Get cookie")
         let domain = "linkedin.com";
-        console.log(request.publicIdentifier)
+        // console.log(request.publicIdentifier)
         chrome.cookies.getAll({domain: domain}, function (cookies) {
 
             processCookie(cookies, request.publicIdentifier);
@@ -199,10 +199,10 @@ async function runContentScript() {
     return runContentScript();
 }
 
-console.log("Running content script")
+// console.log("Running content script")
 runContentScript();
 
-console.log(`BACKGROUND SCRIPT RUNNING!!! ${(new Date()).toString()}`);
+// console.log(`BACKGROUND SCRIPT RUNNING!!! ${(new Date()).toString()}`);
 
 chrome.webNavigation.onCommitted.addListener(function () {
     // chrome.tabs.executeScript(tabId, { file: "content.js" });

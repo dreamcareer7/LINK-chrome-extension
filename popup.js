@@ -1,7 +1,7 @@
-console.log('Extension pop up page opened');
+// console.log('Extension pop up page opened');
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("INSIDE DOM");
+    // console.log("INSIDE DOM");
 
     const names = [
         "signin", "dashboard", "signup", "logout",
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const nameElement = document.getElementsByName(name)[0]
         if (nameElement) {
             nameElement.addEventListener("click", function () {
-                console.log(`In ${nameElement}`);
+                // console.log(`In ${nameElement}`);
                 redirects[name]();
             });
         }
