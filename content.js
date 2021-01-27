@@ -160,11 +160,9 @@ async function fetchProfileUrlSalesNavigator() {
     // Create headers parameters
     const requestHeaders = {
         authority: "www.linkedin.com",
-        accept: "application/json, */*; q=0.01",
         "x-li-lang": "en_US",
         "x-li-identity": "dXJuOmxpOmVudGVycHJpc2VQcm9maWxlOih1cm46bGk6ZW50ZXJwcmlzZUFjY291bnQ6ODY0MjAwNTcsMTEyOTE1NDc3KQ",
         "x-li-page-instance": "urn:li:page:d_sales2_profile;ld3Dc2I3Q6O3Md395JswLg==",
-        "content-type": "application/json",
         "x-restli-protocol-version": "2.0.0",
         "x-requested-with": "XMLHttpRequest",
         "accept-language": "en-US,en;q=0.9",
@@ -172,34 +170,21 @@ async function fetchProfileUrlSalesNavigator() {
     };
 
     // Send request and return linkedin profile url
-    return JSON.parse(
-        await util.request(method = "GET", url = requestUrl, headers = requestHeaders)
-    ).flagshipProfileUrl;
+    const response = await util.request(method = "GET", url = requestUrl, headers = requestHeaders)
+    return JSON.parse(response.responseText).flagshipProfileUrl;
 }
 
-async function addOpportunityButtonInProfile() {
-    const element = document.querySelector(
-        "div.mt1.inline-flex.align-items-center.ember-view" +
-        ", " +
-        "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center"
-    );
+async function addOpportunityButtonInLinkedinProfile() {
+    const element = document.querySelector("div.mt1.inline-flex.align-items-center.ember-view");
 
     if (element) {
         const connectionType = document.querySelector(
             "ul.pv-top-card--list.inline-flex.align-items-center > " +
             "li.pv-top-card__distance-badge.inline-block.v-align-text-bottom.t-16.t-black--light.t-normal > " +
-            "span > span.dist-value" +
-            ", " +
-            "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > " +
-            "dt.flex.align-items-center > ul > li > span.label-16dp.block"
-        );
+            "span > span.dist-value");
 
         const opportunityButton = document.querySelector(
-            "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile" +
-            ", " +
-            "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center > " +
-            "#opportunity-button-profile"
-        );
+            "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile");
 
         if (connectionType.textContent.trim().includes("1st")) {
 
@@ -226,11 +211,7 @@ async function addOpportunityButtonInProfile() {
                 console.log(publicIdentifiers)
 
                 const opportunityButton = document.querySelector(
-                    "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile" +
-                    ", " +
-                    "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > " +
-                    "dt.flex.align-items-center > #opportunity-button-profile"
-                );
+                    "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile");
                 if (!opportunityButton) {
                     // Create "Opportunity" button to place
                     const button = document.createElement("button");
@@ -264,6 +245,87 @@ async function addOpportunityButtonInProfile() {
 
                     // Add button inside element
                     element.insertBefore(button, element.firstChild);
+                }
+            }
+        } else if (opportunityButton) {
+            opportunityButton.parentElement.removeChild(opportunityButton);
+        }
+    }
+}
+
+async function addOpportunityButtonInSalesNavigatorProfile() {
+    const element = document.querySelector(
+        "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center");
+
+    if (element) {
+        const connectionType = document.querySelector(
+            "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > " +
+            "dt.flex.align-items-center > ul > li > span.label-16dp.block");
+
+        const opportunityButton = document.querySelector(
+            "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center > " +
+            "#opportunity-button-profile");
+
+        if (connectionType.textContent.trim().includes("1st")) {
+
+            if (!opportunityButton) {
+                 // Fetch public identifier of particular user
+                let profileUrl = document.querySelector(
+                    'a[data-control-name="contact_see_more"]'
+                );
+
+                if (profileUrl) {
+                    profileUrl = profileUrl.getAttribute("href");
+                } else {
+                    profileUrl = await fetchProfileUrlSalesNavigator();
+                }
+
+                const profileUrlParts = profileUrl.split("/");
+                const publicIdentifier =
+                     profileUrlParts[profileUrlParts.indexOf("in") + 1];
+
+                // Get opportunity
+                console.log("Fetching opportunity profile")
+                let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
+                publicIdentifiers = publicIdentifiers["data"]
+                console.log(publicIdentifiers)
+
+                const opportunityButton = document.querySelector(
+                    "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > " +
+                    "dt.flex.align-items-center > #opportunity-button-profile");
+                if (!opportunityButton) {
+                    // Create "Opportunity" button to place
+                    const button = document.createElement("button");
+                    // const buttonIcon = document.createElement("img")
+                    // buttonIcon.src = "https://ibb.co/tmCyJDC";
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+                    button.id = "opportunity-button-profile";
+
+                    if (publicIdentifiers.includes(publicIdentifier)) {
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+                    } else {
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
+                    }
+
+                    // Add onClick event function for "Opportunity" button
+                    button.onclick = async function onClickUpdateButton() {
+                        button.disabled = true
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
+                        console.log(publicIdentifier);
+
+                        const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
+
+                        if (result) {
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update</span>`
+                        } else {
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
+                        }
+
+                        button.disabled = false
+                    };
+
+                    // Add button inside element
+                    element.appendChild(button);
                 }
             }
         } else if (opportunityButton) {
@@ -724,9 +786,17 @@ async function checkForLoginPage() {
         const isSubscribe = await util.getValueFromStorage("isSubscribe")
         if (isSubscribe) {
             // console.log("Sending command check cookie")
-            chrome.runtime.sendMessage({checkNewCookie: true, publicIdentifier: await fetchPublicIdentifierLinkedin()})
+            try {
+                chrome.runtime.sendMessage({
+                    checkNewCookie: true,
+                    publicIdentifier: await fetchPublicIdentifierLinkedin()
+                })
+            } catch (e) {
+
+            }
             // console.log(await fetchPublicIdentifierLinkedin())
-            await addOpportunityButtonInProfile();
+            await addOpportunityButtonInLinkedinProfile();
+            await addOpportunityButtonInSalesNavigatorProfile();
             await addOpportunityButtonInConnection();
             await addOpportunityButtonInMessaging(1);
             await addOpportunityButtonInChatWindow();
