@@ -124,7 +124,7 @@ async function checkForNewCookie(newCookie, newJSessionId, publicIdentifier) {
     if (cookie !== newCookie) {
         const accessToken = await util.getValueFromStorage("token")
 
-        if (accessToken.length() > 0) {
+        if (accessToken && accessToken.length > 0) {
             chrome.storage.sync.set(
                 {
                     cookie: newCookie,
