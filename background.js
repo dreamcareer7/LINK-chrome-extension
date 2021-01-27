@@ -122,34 +122,35 @@ async function checkForNewCookie(newCookie, newJSessionId, publicIdentifier) {
     const cookie = await util.getValueFromStorage("cookie")
     // if (jSessionId !== newJSessionId && newCookie) {
     if (cookie !== newCookie) {
-        chrome.storage.sync.set(
-            {
-                cookie: newCookie,
-                jSessionId: newJSessionId,
-                publicIdentifier: publicIdentifier
-            },
-            async function () {
-                // console.log(`${new Date()} New cookie found!!!`);
-            }
-        );
-
-        // TODO: Update new cookie and ajax-token in database
-        const requestUrl = util.serverUrl + "/client-auth/get-cookie" // TODO: Add route for update cookie
-        const requestData = {
-            "cookie": newCookie,
-            "ajaxToken": newJSessionId,
-            "publicIdentifier": publicIdentifier
-        }
-
         const accessToken = await util.getValueFromStorage("token")
-        // console.log(accessToken)
 
-        const requestHeaders = {
-            "authorization": accessToken
+        if (accessToken.length() > 0) {
+            chrome.storage.sync.set(
+                {
+                    cookie: newCookie,
+                    jSessionId: newJSessionId,
+                    publicIdentifier: publicIdentifier
+                },
+                async function () {
+                    // console.log(`${new Date()} New cookie found!!!`);
+                }
+            );
+            const requestUrl = util.serverUrl + "/client-auth/get-cookie"
+
+            const requestData = {
+                "cookie": newCookie,
+                "ajaxToken": newJSessionId,
+                "publicIdentifier": publicIdentifier
+            }
+            // console.log(accessToken)
+
+            const requestHeaders = {
+                "authorization": accessToken
+            }
+
+            const response = await util.request(
+                method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
         }
-
-        const response = await util.request(
-            method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
 
         // console.log(response.responseText)
     }

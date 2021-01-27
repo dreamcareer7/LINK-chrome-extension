@@ -1,10 +1,27 @@
-// console.log('Extension pop up page opened');
+let util = {
+
+    /**
+     * Function to fetch value from chrome storage
+     * @param {string} keyName name of key
+     */
+    getValueFromStorage: async function (keyName = null) {
+        return await new Promise(resolve => {
+            chrome.storage.sync.get(keyName, (data) => {
+                if (keyName) {
+                    resolve(data[keyName])
+                } else {
+                    resolve(data)
+                }
+            })
+        })
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     // console.log("INSIDE DOM");
 
     const names = [
-        "signin", "dashboard", "signup", "logout",
+        "signin", "dashboard", "signup", "logout", "close"
     ]
 
     names.forEach(name => {
@@ -23,8 +40,9 @@ const redirects = {
         const url = "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=776gktki6ukrgj&redirect_uri=https://link.dev.gradlesol.com/app/client-auth/sign-up-extension&state=fooobar&scope=r_emailaddress,r_liteprofile"
         window.open(url, '_blank');
     },
-    "dashboard": function () {
-        const url = "https://link.dev.gradlesol.com/home"
+
+    "dashboard": async function () {
+        const url = "http://link.dev.gradlesol.com/auth-verify?token=" + await util.getValueFromStorage("token")
         window.open(url, '_blank');
     },
 
@@ -39,5 +57,9 @@ const redirects = {
             chrome.browserAction.setPopup({popup: "signin.html"});
             window.location.href = "signin.html";
         })
+    },
+
+    "close": function () {
+        window.close();
     }
 }
