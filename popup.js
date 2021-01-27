@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log("INSIDE DOM");
 
     const names = [
-        "signin", "dashboard", "subscribe", "logout",
+        "signin", "dashboard", "signup", "logout",
     ]
 
     names.forEach(name => {
@@ -28,7 +28,7 @@ const redirects = {
         window.open(url, '_blank');
     },
 
-    "subscribe": function () {
+    "signup": function () {
         const url = "https://linkfluencer.com/"
         window.open(url, '_blank');
         chrome.browserAction.setPopup({popup: "signin.html"});
