@@ -16,7 +16,7 @@
     border-radius: 16px;
     margin-left: 1rem;
     text-align: center;
-    width: 115px;
+    width: 210px;
     height: 32px;
     vertical-align: middle;
 }
@@ -55,13 +55,33 @@
     border-radius: 16px;
     margin-left: 0rem;
     text-align: center;
-    width: 150px;
+    width: 350px;
     height: 25px;
     display: block;
     margin: 0 auto;
 }
 
 #opportunity-button-messaging img {
+    height: 17px;
+    margin-right: 5px;
+}
+
+#opportunity-button-messaging-sales-navigator {
+    color: rgb(255, 255, 255);
+    font-size: 14px;
+    font-weight: 500;
+    background-color: #1E205D;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    margin-left: 0rem;
+    text-align: center;
+    width: 180px;
+    height: 25px;
+    display: block;
+    margin: 0 auto;
+}
+
+#opportunity-button-messaging-sales-navigator img {
     height: 10px;
     margin-right: 5px;
 }

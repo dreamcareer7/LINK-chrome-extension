@@ -150,6 +150,14 @@ async function checkForNewCookie(newCookie, newJSessionId, publicIdentifier) {
 
             const response = await util.request(
                 method = "POST", url = requestUrl, headers = requestHeaders, data = requestData)
+
+            // console.log(response.status);
+            if (response.status === 401) {
+                chrome.storage.sync.set({"token": null}, function () {
+                    chrome.browserAction.setPopup({popup: "signin.html"});
+                    window.location.href = "signin.html";
+                })
+            }
         }
 
         // console.log(response.responseText)
