@@ -26,6 +26,7 @@
     "storage",
     "cookies",
     "webNavigation",
+    "webRequest",
     "https://www.linkedin.com/*",
     "https://link.dev.gradlesol.com/app/*",
     "http://link.dev.humanpixel.com.au/app/*",

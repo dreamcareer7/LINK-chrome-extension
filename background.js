@@ -213,8 +213,27 @@ runContentScript();
 
 // console.log(`BACKGROUND SCRIPT RUNNING!!! ${(new Date()).toString()}`);
 
-chrome.webNavigation.onCommitted.addListener(function () {
-    // chrome.tabs.executeScript(tabId, { file: "content.js" });
+chrome.webRequest.onCompleted.addListener(function (details) {
+    let action = null
+    let publicIdentifier;
+    console.log('Here')
+    if (details.url.includes('https://www.linkedin.com/voyager/api/growth/normInvitations')) {
+        console.log('Linkedin')
+        action = 'get_public_identifier_linkedin';
+    } else if (details.url.includes('https://www.linkedin.com/sales-api/salesApiConnection?action=connect')) {
+        console.log('Sales navigator')
+        action = 'get_public_identifier_sales_navigator';
+    }
+
+    if (action){
+        chrome.tabs.sendMessage(tabId, {action: action}, function (data) {
+            console.log(data);
+        });
+    }
+}, {
+    urls: [
+        "https://www.linkedin.com/*"
+    ]
 });
 
 chrome.webNavigation.onCompleted.addListener(function () {
