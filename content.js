@@ -272,7 +272,7 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
         if (connectionType.textContent.trim().includes("1st")) {
 
             if (!opportunityButton) {
-                 // Fetch public identifier of particular user
+                // Fetch public identifier of particular user
                 let profileUrl = document.querySelector(
                     'a[data-control-name="contact_see_more"]'
                 );
@@ -285,7 +285,7 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
 
                 const profileUrlParts = profileUrl.split("/");
                 const publicIdentifier =
-                     profileUrlParts[profileUrlParts.indexOf("in") + 1];
+                    profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
                 // Get opportunity
                 // console.log("Fetching opportunity profile")
@@ -851,29 +851,33 @@ async function checkForLoginPage() {
 }
 
 (async function () {
-    const pageLink = document.URL;
-    if (pageLink.includes(".linkedin.com/")) {
-        // await checkForLoginPage()
-        const isSubscribe = await util.getValueFromStorage("isSubscribe")
-        if (isSubscribe) {
-            // console.log("Sending command check cookie")
-            try {
-                chrome.runtime.sendMessage({
-                    checkNewCookie: true,
-                    publicIdentifier: await fetchPublicIdentifierLinkedin()
-                })
-            } catch (e) {
+    const accessToken = await util.getValueFromStorage("token");
 
+    if (accessToken && accessToken.length > 0) {
+        const pageLink = document.URL;
+        if (pageLink.includes(".linkedin.com/")) {
+            // await checkForLoginPage()
+            const isSubscribe = await util.getValueFromStorage("isSubscribe")
+            if (isSubscribe) {
+                // console.log("Sending command check cookie")
+                try {
+                    chrome.runtime.sendMessage({
+                        checkNewCookie: true,
+                        publicIdentifier: await fetchPublicIdentifierLinkedin()
+                    })
+                } catch (e) {
+
+                }
+                // console.log(await fetchPublicIdentifierLinkedin())
+                await addOpportunityButtonInLinkedinProfile();
+                await addOpportunityButtonInSalesNavigatorProfile();
+                await addOpportunityButtonInConnection();
+                await addOpportunityButtonInMessaging(1);
+                await addOpportunityButtonInSaleNavigatorMessaging(1);
+                await addOpportunityButtonInChatWindow();
             }
-            // console.log(await fetchPublicIdentifierLinkedin())
-            await addOpportunityButtonInLinkedinProfile();
-            await addOpportunityButtonInSalesNavigatorProfile();
-            await addOpportunityButtonInConnection();
-            await addOpportunityButtonInMessaging(1);
-            await addOpportunityButtonInSaleNavigatorMessaging(1);
-            await addOpportunityButtonInChatWindow();
         }
-    }
 
+    }
     chrome.runtime.sendMessage({runAgain: true})
 })();

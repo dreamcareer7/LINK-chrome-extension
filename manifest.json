@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Jayla Link Fluencer",
+  "name": "Jayla",
   "version": "1.0",
-  "description": "Make better opportunity",
+  "description": "LinkedIn Lead Generation Management & CRM Software",
   "web_accessible_resources": [
     "img/*.svg"
   ],
@@ -27,7 +27,10 @@
     "cookies",
     "webNavigation",
     "https://www.linkedin.com/*",
-    "https://link.dev.gradlesol.com/app/*"
+    "https://link.dev.gradlesol.com/app/*",
+    "http://link.dev.humanpixel.com.au/app/*",
+    "http://link.test.humanpixel.com.au/app/*",
+    "http://jayla.ai/app/*"
   ],
   "browser_action": {
     "default_icon": "img/defaultIcon.png",
