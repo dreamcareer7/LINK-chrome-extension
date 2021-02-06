@@ -13,6 +13,8 @@ async function resetValidation() {
 let util = {
     serverUrl: "https://link.dev.gradlesol.com/app",
 
+    pageUrl: '',
+
     /**
      * Function for putting static delay
      * @param {int} milliseconds Time duration in milliseconds
@@ -173,9 +175,9 @@ chrome.tabs.onActivated.addListener(function (tab) {
 let runAgain = true
 
 chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
-    if (request.runAgain) {
+    if (request.action === 'run_again') {
         runAgain = true;
-    } else if (request.checkNewCookie) {
+    } else if (request.action === 'check_new_cookie') {
         // console.log("Get cookie")
         let domain = "linkedin.com";
         // console.log(request.publicIdentifier)
@@ -183,8 +185,10 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
 
             processCookie(cookies, request.publicIdentifier);
         });
+    } else if (request.action === 'store_page_url') {
+        util.pageUrl = request.pageUrl
     }
-})
+});
 
 let tries = 0
 

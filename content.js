@@ -853,16 +853,7 @@ async function checkForLoginPage() {
 
 (async function () {
 
-    chrome.extension.onMessage.addListener(async function(request, sender, sendResponse) {
-        console.log("In fetching public identifier")
-        if (request.action === 'get_public_identifier_linkedin') {
-            console.log('Linkedin');
-            sendResponse(await fetchPublicIdentifierLinkedin());
-        } else if(request.action === 'get_public_identifier_sales_navigator') {
-            console.log('Sales navigator');
-            sendResponse(await fetchProfileUrlSalesNavigator())
-        }
-    });
+    chrome.runtime.sendMessage({action: 'store_page_url', pageUrl: document.URL})
 
     const accessToken = await util.getValueFromStorage("token");
 
@@ -875,7 +866,7 @@ async function checkForLoginPage() {
                 // console.log("Sending command check cookie")
                 try {
                     chrome.runtime.sendMessage({
-                        checkNewCookie: true,
+                        action: 'check_new_cookie',
                         publicIdentifier: await fetchPublicIdentifierLinkedin()
                     })
                 } catch (e) {
@@ -892,5 +883,5 @@ async function checkForLoginPage() {
         }
 
     }
-    chrome.runtime.sendMessage({runAgain: true})
+    chrome.runtime.sendMessage({action: 'run_again'})
 })();
