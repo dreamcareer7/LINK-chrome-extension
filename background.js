@@ -75,6 +75,43 @@ let util = {
 
 //endregion
 
+async function fetchProfileUrlSalesNavigator() {
+    // Create request url
+    const urlParts = util.pageUrl.split("/");
+
+    const searchData = urlParts[urlParts.indexOf("people") + 1]
+        .split("?")[0]
+        .split(",");
+
+    const requestUrl =
+        "https://www.linkedin.com/sales-api/salesApiProfiles/(" +
+        `profileId:${searchData[0]},` +
+        `authType:${searchData[1]},` +
+        `authToken:${searchData[2]}` +
+        ")?decoration=%28entityUrn%2CobjectUrn%2CpictureInfo%2CprofilePictureDisplayImage%2CfirstName%2C" +
+        "lastName%2CfullName%2Ccolleague%2Cheadline%2CmemberBadges%2Cdegree%2CprofileUnlockInfo%2C" +
+        "location%2ClistCount%2Cindustry%2CnumOfConnections%2CinmailRestriction%2CsavedLead%2C" +
+        "defaultPosition%2CcontactInfo%2Csummary%2CcrmStatus%2CpendingInvitation%2Cunlocked%2C" +
+        "relatedColleagueCompanyId%2CnumOfSharedConnections%2CshowTotalConnectionsPage%2CconnectedTime%2C" +
+        "noteCount%2CflagshipProfileUrl%2Cmemorialized%2Cpositions*%2Ceducations*%29";
+
+    // Create headers parameters
+    const requestHeaders = {
+        authority: "www.linkedin.com",
+        "x-li-lang": "en_US",
+        "x-li-identity": "dXJuOmxpOmVudGVycHJpc2VQcm9maWxlOih1cm46bGk6ZW50ZXJwcmlzZUFjY291bnQ6ODY0MjAwNTcsMTEyOTE1NDc3KQ",
+        "x-li-page-instance": "urn:li:page:d_sales2_profile;ld3Dc2I3Q6O3Md395JswLg==",
+        "x-restli-protocol-version": "2.0.0",
+        "x-requested-with": "XMLHttpRequest",
+        "accept-language": "en-US,en;q=0.9",
+        "csrf-token": await util.getValueFromStorage("jSessionId"),
+    };
+
+    // Send request and return linkedin profile url
+    const response = await util.request(method = "GET", url = requestUrl, headers = requestHeaders)
+    return JSON.parse(response.responseText).flagshipProfileUrl;
+}
+
 async function checkForLinkedIn(tab) {
     if (
         tab.url.includes(
@@ -217,26 +254,27 @@ runContentScript();
 
 // console.log(`BACKGROUND SCRIPT RUNNING!!! ${(new Date()).toString()}`);
 
-chrome.webRequest.onCompleted.addListener(function (details) {
-    let action = null
-    let publicIdentifier;
-    console.log('Here')
+chrome.webRequest.onCompleted.addListener(async function (details) {
+    let profileUrl;
+    let action = false
     if (details.url.includes('https://www.linkedin.com/voyager/api/growth/normInvitations')) {
-        console.log('Linkedin')
-        action = 'get_public_identifier_linkedin';
+        profileUrl = util.pageUrl;
+        action = true;
+
     } else if (details.url.includes('https://www.linkedin.com/sales-api/salesApiConnection?action=connect')) {
-        console.log('Sales navigator')
-        action = 'get_public_identifier_sales_navigator';
+        profileUrl = await fetchProfileUrlSalesNavigator()
+        action = true
     }
 
     if (action){
-        chrome.tabs.sendMessage(tabId, {action: action}, function (data) {
-            console.log(data);
-        });
+        const profileUrlParts = profileUrl.split('/')
+        const publicIdentifier = profileUrlParts[profileUrlParts.indexOf("in") + 1];
+        console.log(publicIdentifier);
     }
 }, {
     urls: [
-        "https://www.linkedin.com/*"
+        "https://www.linkedin.com/voyager/api/growth/*",
+        "https://www.linkedin.com/sales-api/*"
     ]
 });
 
