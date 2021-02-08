@@ -53,7 +53,13 @@ const redirects = {
     },
 
     "logout": function () {
-        chrome.storage.sync.set({"token": null}, function () {
+        chrome.storage.sync.set(
+            {
+                "token": null,
+                "profilePicture": null,
+                "profileName": null,
+                "profileTitle": null
+            }, function () {
             chrome.browserAction.setPopup({popup: "signin.html"});
             window.location.href = "signin.html";
         })
@@ -63,3 +69,35 @@ const redirects = {
         window.close();
     }
 }
+
+/**
+ * Dynamic profile content
+ */
+async function dynamicProfileContentFilling() {
+    console.log('here')
+    const profilePictureHandler = document.getElementById("profilePicture")
+    if (profilePictureHandler) {
+        console.log('In profile picture')
+        const profilePicture = await util.getValueFromStorage('profilePicture');
+        if (profilePicture) {
+            profilePictureHandler.src = profilePicture
+        }
+    }
+    const profileNameHandler = document.getElementById("profileName")
+    if (profileNameHandler) {
+        console.log('In profile name')
+        const profileName = await util.getValueFromStorage('profileName');
+        if (profileName) {
+            profileNameHandler.innerText = profileName
+        }
+    }
+    const profileTitleHandler = document.getElementById("profileTitle")
+    if (profileTitleHandler) {
+        console.log('In profile title')
+        const profileTitle = await util.getValueFromStorage('profileTitle');
+        if (profileTitle) {
+            profileTitleHandler.innerText = profileTitle
+        }
+    }
+}
+dynamicProfileContentFilling()
