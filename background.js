@@ -128,14 +128,17 @@ async function checkForLinkedIn(tab) {
         chrome.storage.sync.set({
                 token: queryParams["token"],
                 isSubscribe: true,
+                profilePicture: queryParams["profilePicture"],
+                profileName: queryParams["profileName"],
+                profileTitle: queryParams["profileTitle"]
             }, async function () {
                 // console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
                 if (queryParams["is"] === '1') {
                     chrome.browserAction.setPopup({popup: "loggedIn.html"});
                     window.location.href = "loggedIn.html";
                 } else {
-                    chrome.browserAction.setPopup({popup: "subscribe.html"});
-                    window.location.href = "subscribe.html";
+                    chrome.browserAction.setPopup({popup: "signup.html"});
+                    window.location.href = "signup.html";
                 }
             }
         );
@@ -269,6 +272,8 @@ chrome.webRequest.onCompleted.addListener(async function (details) {
     if (action){
         const profileUrlParts = profileUrl.split('/')
         const publicIdentifier = profileUrlParts[profileUrlParts.indexOf("in") + 1];
+
+        // TODO: Do API call to backend server for invitation counts
         console.log(publicIdentifier);
     }
 }, {
