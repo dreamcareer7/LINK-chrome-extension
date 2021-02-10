@@ -74,6 +74,18 @@ let util = {
 }
 
 //endregion
+async function init() {
+    if (await util.getValueFromStorage('token')) {
+        if(await util.getValueFromStorage('is')) {
+            chrome.browserAction.setPopup({popup: "loggedIn.html"});
+            window.location.href = "loggedIn.html";
+        } else {
+            chrome.browserAction.setPopup({popup: "signup.html"});
+            window.location.href = "signup.html";
+        }
+    }
+}
+init()
 
 async function fetchProfileUrlSalesNavigator() {
     // Create request url
@@ -125,12 +137,28 @@ async function checkForLinkedIn(tab) {
             queryParams[queryParts[index].split('=')[0]] = queryParts[index].split('=')[1]
         }
 
+        const requestUrl = util.serverUrl + '/client-auth/get-profile-for-extension'
+
+        const requestHeaders = {
+            "authorization": queryParams["token"]
+        }
+
+        let response = await util.request('GET', requestUrl, requestHeaders)
+
+        if (response.status === 200)
+            response = JSON.parse(response.responseText).data
+        else {
+            response = {}
+        }
+
+        console.log(response)
         chrome.storage.sync.set({
                 token: queryParams["token"],
                 isSubscribe: true,
-                profilePicture: queryParams["profilePicture"],
-                profileName: queryParams["profileName"],
-                profileTitle: queryParams["profileTitle"]
+                profilePicture: response.profilePicture,
+                profileName: response.profileName,
+                profileTitle: response.profileTitle,
+                is: true
             }, async function () {
                 // console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
                 if (queryParams["is"] === '1') {
