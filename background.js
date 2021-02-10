@@ -158,7 +158,7 @@ async function checkForLinkedIn(tab) {
                 profilePicture: response.profilePicture,
                 profileName: response.profileName,
                 profileTitle: response.profileTitle,
-                is: true
+                is: queryParams["is"]
             }, async function () {
                 // console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
                 if (queryParams["is"] === '1') {
@@ -297,7 +297,7 @@ chrome.webRequest.onCompleted.addListener(async function (details) {
         action = true
     }
 
-    if (action){
+    if (action && (await util.getValueFromStorage('is') === '1')){
         const profileUrlParts = profileUrl.split('/')
         const publicIdentifier = profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
