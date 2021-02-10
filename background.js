@@ -301,8 +301,17 @@ chrome.webRequest.onCompleted.addListener(async function (details) {
         const profileUrlParts = profileUrl.split('/')
         const publicIdentifier = profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
-        // TODO: Do API call to backend server for invitation counts
-        console.log(publicIdentifier);
+
+        const requestUrl = util.serverUrl + '/invitee/add-user'
+        const requestHeaders = {
+            "authorization": await util.getValueFromStorage('token')
+        }
+        const requestData = {
+            publicIdentifier: publicIdentifier
+        }
+
+        await util.request('PUT', requestUrl, requestHeaders, requestData)
+
     }
 }, {
     urls: [
