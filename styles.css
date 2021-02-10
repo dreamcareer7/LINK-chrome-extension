@@ -54,21 +54,19 @@
     align-items: center;
     justify-content: center;
     color: rgb(255, 255, 255);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     background-color: #1E205D;
     border: 1px solid transparent;
     border-radius: 16px;
-    margin-left: 0rem;
     text-align: center;
-    width: 450px;
-    height: 25px;
-    display: block;
+    width: 400px;
+    height: 30px;
     margin: 0 auto;
 }
 
 #opportunity-button-messaging img {
-    height: 25px;
+    height: 23px;
     margin-right: 5px;
 }
 
@@ -77,21 +75,19 @@
     align-items: center;
     justify-content: center;
     color: rgb(255, 255, 255);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     background-color: #1E205D;
     border: 1px solid transparent;
     border-radius: 16px;
-    margin-left: 0rem;
     text-align: center;
-    width: 180px;
-    height: 25px;
-    display: block;
+    width: 190px;
+    height: 30px;
     margin: 0 auto;
 }
 
 #opportunity-button-messaging-sales-navigator img {
-    height: 17px;
+    height: 23px;
     margin-right: 5px;
 }
 
@@ -102,9 +98,8 @@
     background-color: #1E205D;
     border: 1px solid transparent;
     border-radius: 16px;
-    margin-left: 0rem;
     text-align: center;
-    width: 80px;
+    width: 65px;
     height: 20px;
     display: block;
     margin: 0 auto;
