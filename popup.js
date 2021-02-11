@@ -37,19 +37,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
 const redirects = {
     "signin": function () {
-        const url = "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=776gktki6ukrgj&redirect_uri=https://link.dev.gradlesol.com/app/client-auth/sign-up-extension&state=fooobar&scope=r_emailaddress,r_liteprofile"
+        const url = "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=86mz67ydcyjqc2&redirect_uri=https://jayla.linkfluencer.com/app/client-auth/sign-up-extension&state=fooobar&scope=r_emailaddress,r_liteprofile"
         window.open(url, '_blank');
     },
 
     "dashboard": async function () {
-        const url = "http://link.dev.gradlesol.com/auth-verify?token=" + await util.getValueFromStorage("token")
+        const url = "https://jayla.linkfluencer.com/auth-verify?token=" + await util.getValueFromStorage("token")
         window.open(url, '_blank');
     },
 
     "signup": function () {
-        const url = "https://linkfluencer.com/"
-        window.open(url, '_blank');
-        chrome.browserAction.setPopup({popup: "signin.html"});
+
+        chrome.storage.sync.set(
+            {
+                "token": null,
+                "profilePicture": null,
+                "profileName": null,
+                "profileTitle": null
+            }, function () {
+                chrome.browserAction.setPopup({popup: "signin.html"});
+                window.location.href = "signin.html";
+                const url = "https://linkfluencer.com/"
+                window.open(url, '_blank');
+            })
     },
 
     "logout": function () {
@@ -60,9 +70,9 @@ const redirects = {
                 "profileName": null,
                 "profileTitle": null
             }, function () {
-            chrome.browserAction.setPopup({popup: "signin.html"});
-            window.location.href = "signin.html";
-        })
+                chrome.browserAction.setPopup({popup: "signin.html"});
+                window.location.href = "signin.html";
+            })
     },
 
     "close": function () {
@@ -74,10 +84,10 @@ const redirects = {
  * Dynamic profile content
  */
 async function dynamicProfileContentFilling() {
-    console.log('here')
+    // console.log('here')
     const profilePictureHandler = document.getElementById("profilePicture")
     if (profilePictureHandler) {
-        console.log('In profile picture')
+        // console.log('In profile picture')
         const profilePicture = await util.getValueFromStorage('profilePicture');
         if (profilePicture) {
             profilePictureHandler.src = profilePicture
@@ -85,7 +95,7 @@ async function dynamicProfileContentFilling() {
     }
     const profileNameHandler = document.getElementById("profileName")
     if (profileNameHandler) {
-        console.log('In profile name')
+        // console.log('In profile name')
         const profileName = await util.getValueFromStorage('profileName');
         if (profileName) {
             profileNameHandler.innerText = profileName
@@ -93,11 +103,12 @@ async function dynamicProfileContentFilling() {
     }
     const profileTitleHandler = document.getElementById("profileTitle")
     if (profileTitleHandler) {
-        console.log('In profile title')
+        // console.log('In profile title')
         const profileTitle = await util.getValueFromStorage('profileTitle');
         if (profileTitle) {
             profileTitleHandler.innerText = profileTitle
         }
     }
 }
+
 dynamicProfileContentFilling()

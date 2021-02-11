@@ -11,7 +11,7 @@ async function resetValidation() {
 //region UTILITIES
 
 let util = {
-    serverUrl: "https://link.dev.gradlesol.com/app",
+    serverUrl: "https://jayla.linkfluencer.com/app",
 
     pageUrl: '',
 
@@ -76,7 +76,7 @@ let util = {
 //endregion
 async function init() {
     if (await util.getValueFromStorage('token')) {
-        if(await util.getValueFromStorage('is')) {
+        if((await util.getValueFromStorage('is'))=== '1') {
             chrome.browserAction.setPopup({popup: "loggedIn.html"});
             window.location.href = "loggedIn.html";
         } else {
@@ -127,11 +127,11 @@ async function fetchProfileUrlSalesNavigator() {
 async function checkForLinkedIn(tab) {
     if (
         tab.url.includes(
-            "https://link.dev.gradlesol.com/app/linkedin-signin.html?token="
+            "https://jayla.linkfluencer.com/app/linkedin-signin.html?token="
         )
     ) {
         const queryParts = tab.url.split('?')[1].split('&')
-        let queryParams = {}
+        let queryParams = {};
 
         for (const index in queryParts) {
             queryParams[queryParts[index].split('=')[0]] = queryParts[index].split('=')[1]
@@ -140,7 +140,7 @@ async function checkForLinkedIn(tab) {
         const requestUrl = util.serverUrl + '/client-auth/get-profile-for-extension'
 
         const requestHeaders = {
-            "authorization": queryParams["token"]
+            "authorization": queryParams["lToken"]
         }
 
         let response = await util.request('GET', requestUrl, requestHeaders)
@@ -151,7 +151,7 @@ async function checkForLinkedIn(tab) {
             response = {}
         }
 
-        console.log(response)
+        // console.log(response)
         chrome.storage.sync.set({
                 token: queryParams["token"],
                 isSubscribe: true,

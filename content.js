@@ -1,6 +1,6 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://link.dev.gradlesol.com/app",
+    serverUrl: "https://jayla.linkfluencer.com/app",
 
     /**
      * Function for putting static delay
@@ -443,7 +443,7 @@ async function addOpportunityButtonInMessaging(location = 1) {
     } else if (location === 2) {
         await addOpportunityButtonUnderChat();
     } else {
-        console.error(`No Location ${location.toString()} exists`)
+        // console.error(`No Location ${location.toString()} exists`)
     }
 }
 
@@ -512,7 +512,7 @@ async function addOpportunityButtonInSaleNavigatorMessaging(location = 1) {
     if (location === 1) {
         await addOpportunityButtonInSalesNavigatorChatSection();
     }else {
-        console.error(`No Location ${location.toString()} exists`)
+        // console.error(`No Location ${location.toString()} exists`)
     }
 }
 
