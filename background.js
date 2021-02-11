@@ -75,7 +75,7 @@ let util = {
 
 //endregion
 async function init() {
-    if (await util.getValueFromStorage('token')) {
+    if (await util.getValueFromStorage('lToken')) {
         if((await util.getValueFromStorage('is'))=== '1') {
             chrome.browserAction.setPopup({popup: "loggedIn.html"});
             window.location.href = "loggedIn.html";
@@ -154,6 +154,7 @@ async function checkForLinkedIn(tab) {
         // console.log(response)
         chrome.storage.sync.set({
                 token: queryParams["token"],
+                lToken: queryParams["lToken"],
                 isSubscribe: true,
                 profilePicture: response.profilePicture,
                 profileName: response.profileName,
