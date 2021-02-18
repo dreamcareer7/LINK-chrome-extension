@@ -520,7 +520,9 @@ async function addOpportunityButtonInChatSection() {
     const element = document.querySelector('div.shared-title-bar__title.msg-title-bar__title-bar-title')
 
     const chatElement = document.querySelector('a[data-control-name="topcard"]')
+
     if (chatElement) {
+
         const opportunityButton = document.querySelector(
             'div.shared-title-bar__title.msg-title-bar__title-bar-title > #opportunity-button-messaging')
 
@@ -543,7 +545,9 @@ async function addOpportunityButtonInChatSection() {
             }
         }
 
-        if (!opportunityButton) {
+        let noConnectionElement = document.querySelector('.msg-thread.relative.display-flex').querySelector('.msg-s-thread-actions-tray__item-nonconnection-banner')
+
+        if (!noConnectionElement && !opportunityButton) {
             // Get opportunity
             // console.log("Fetching opportunity profile")
             let publicIdentifiers = await util.getOpportunity({publicIdentifierArr: [publicIdentifier]});
@@ -748,11 +752,13 @@ async function addOpportunityButtonInChatWindow() {
             const chatElement = chatElements[index];
 
             try {
+                let noConnectionElement = chatElement.querySelector('.msg-s-thread-actions-tray__item-nonconnection-banner')
+
                 const opportunityButton = chatElement.querySelector(
                     'section.msg-overlay-bubble-header__controls.display-flex.align-items-center > ' +
                     '#opportunity-button-chat')
 
-                if (!opportunityButton) {
+                if (!noConnectionElement && !opportunityButton) {
 
                     const publicUrlElement = chatElement.querySelector(
                         'a.profile-card-one-to-one__profile-link.ember-view')
