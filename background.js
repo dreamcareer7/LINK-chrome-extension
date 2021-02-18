@@ -11,7 +11,7 @@ async function resetValidation() {
 //region UTILITIES
 
 let util = {
-    serverUrl: "https://jayla.linkfluencer.com/app",
+    serverUrl: "https://link.dev.gradlesol.com/app",
 
     pageUrl: '',
 
@@ -127,7 +127,7 @@ async function fetchProfileUrlSalesNavigator() {
 async function checkForLinkedIn(tab) {
     if (
         tab.url.includes(
-            "https://jayla.linkfluencer.com/app/linkedin-signin.html?token="
+            "https://link.dev.gradlesol.com/app/linkedin-signin.html?token="
         )
     ) {
         const queryParts = tab.url.split('?')[1].split('&')
