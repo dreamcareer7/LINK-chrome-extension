@@ -37,12 +37,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 const redirects = {
     "signin": function () {
-        const url = "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=776gktki6ukrgj&redirect_uri=https://link.dev.gradlesol.com/app/client-auth/sign-up-extension&state=fooobar&scope=r_emailaddress,r_liteprofile"
+        const url = "https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=86mz67ydcyjqc2&redirect_uri=https://jayla.linkfluencer.com/app/client-auth/sign-up-extension&state=fooobar&scope=r_emailaddress,r_liteprofile"
         window.open(url, '_blank');
     },
 
     "dashboard": async function () {
-        const url = "https://link.dev.gradlesol.com/auth-verify?token=" + await util.getValueFromStorage("token")
+        const url = "https://jayla.linkfluencer.com/auth-verify?token=" + await util.getValueFromStorage("token")
         window.open(url, '_blank');
     },
 
