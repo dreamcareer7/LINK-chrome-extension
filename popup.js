@@ -1,5 +1,40 @@
 let util = {
 
+     serverUrl: "https://link.dev.gradlesol.com/app",
+
+     /**
+     * Function to make XHL Http Request
+     * @param {string} method Method of request
+     * @param {string} url url of request
+     * @param {object} data Data of request
+     * @param {object} headers headers of request
+     */
+    request: async function (method, url, headers = {}, data = {}) {
+        return await new Promise(async (resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.withCredentials = true;
+
+            // Add event handler for request
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === 4) {
+                    resolve(this);
+                }
+            });
+
+            // Open url
+            xhr.open(method, url);
+
+            // Set all headers
+            xhr.setRequestHeader("Content-Type", "application/json");
+            for (const header_key in headers) {
+                xhr.setRequestHeader(header_key, headers[header_key]);
+            }
+
+            // Send request and wait for response
+            xhr.send(JSON.stringify(data));
+        });
+    },
+
     /**
      * Function to fetch value from chrome storage
      * @param {string} keyName name of key
@@ -16,24 +51,6 @@ let util = {
         })
     }
 }
-
-document.addEventListener('DOMContentLoaded', function () {
-    // console.log("INSIDE DOM");
-
-    const names = [
-        "signin", "dashboard", "signup", "logout", "close"
-    ]
-
-    names.forEach(name => {
-        const nameElement = document.getElementsByName(name)[0]
-        if (nameElement) {
-            nameElement.addEventListener("click", function () {
-                // console.log(`In ${nameElement}`);
-                redirects[name]();
-            });
-        }
-    })
-})
 
 const redirects = {
     "signin": function () {
@@ -68,7 +85,9 @@ const redirects = {
                 "token": null,
                 "profilePicture": null,
                 "profileName": null,
-                "profileTitle": null
+                "profileTitle": null,
+                "lToken": null,
+                'is': null
             }, function () {
                 chrome.browserAction.setPopup({popup: "signin.html"});
                 window.location.href = "signin.html";
@@ -79,6 +98,41 @@ const redirects = {
         window.close();
     }
 }
+
+window.onload = async function() {
+    if (await util.getValueFromStorage('lToken')) {
+        if((await util.getValueFromStorage('is'))=== '1') {
+            const requestUrl = util.serverUrl + '/client-auth/get-login-status'
+            const requestHeaders = {
+                "authorization": await getValueFromStorage('token')
+            }
+            const response = await util.request('GET', requestUrl, requestHeaders);
+            chrome.runtime.sendMessage({action: 'log', message: `Check login status: ${response.status.toString()}`})
+            if (response.status !== 200) {
+                redirects.logout();
+                chrome.runtime.sendMessage({action: 'log', message: 'Logout'})
+            }
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // console.log("INSIDE DOM");
+
+    const names = [
+        "signin", "dashboard", "signup", "logout", "close"
+    ]
+
+    names.forEach(name => {
+        const nameElement = document.getElementsByName(name)[0]
+        if (nameElement) {
+            nameElement.addEventListener("click", function () {
+                // console.log(`In ${nameElement}`);
+                redirects[name]();
+            });
+        }
+    })
+})
 
 /**
  * Dynamic profile content
