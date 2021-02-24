@@ -79,7 +79,12 @@ const redirects = {
             })
     },
 
-    "logout": function () {
+    "logout": async function () {
+        const requestUrl = util.serverUrl + '/client-auth/logout'
+        const requestHeaders = {
+            'authorisation': await util.getValueFromStorage('token')
+        }
+        await util.request('POST', requestUrl, requestHeaders)
         chrome.storage.sync.set(
             {
                 "token": null,
@@ -104,7 +109,7 @@ window.onload = async function() {
         if((await util.getValueFromStorage('is'))=== '1') {
             const requestUrl = util.serverUrl + '/client-auth/get-login-status'
             const requestHeaders = {
-                "authorization": await getValueFromStorage('token')
+                "authorization": await util.getValueFromStorage('token')
             }
             const response = await util.request('GET', requestUrl, requestHeaders);
             chrome.runtime.sendMessage({action: 'log', message: `Check login status: ${response.status.toString()}`})

@@ -76,7 +76,12 @@ let util = {
 //endregion
 
 const redirects = {
-    "logout": function () {
+    "logout": async function () {
+        const requestUrl = util.serverUrl + '/client-auth/logout'
+        const requestHeaders = {
+            'authorization': await util.getValueFromStorage('token')
+        }
+        await util.request('POST', requestUrl, requestHeaders)
         chrome.storage.sync.set(
             {
                 "token": null,
@@ -97,15 +102,15 @@ async function init() {
         if((await util.getValueFromStorage('is'))=== '1') {
             const requestUrl = util.serverUrl + '/client-auth/get-login-status'
             const requestHeaders = {
-                "authorization": await getValueFromStorage('token')
+                "authorization": await util.getValueFromStorage('token')
             }
             const response = await util.request('GET', requestUrl, requestHeaders);
             chrome.runtime.sendMessage({action: 'log', message: `Check login status: ${response.status.toString()}`})
             if (response.status !== 200) {
+                redirects.logout();
+            } else {
                 chrome.browserAction.setPopup({popup: "loggedIn.html"});
                 window.location.href = "loggedIn.html";
-            } else {
-                redirects.logout()
             }
         } else {
             chrome.browserAction.setPopup({popup: "signup.html"});
