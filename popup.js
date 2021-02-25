@@ -82,7 +82,7 @@ const redirects = {
     "logout": async function () {
         const requestUrl = util.serverUrl + '/client-auth/logout'
         const requestHeaders = {
-            'authorisation': await util.getValueFromStorage('token')
+            'authorization': await util.getValueFromStorage('token')
         }
         await util.request('POST', requestUrl, requestHeaders)
         chrome.storage.sync.set(

@@ -888,7 +888,7 @@ async function checkForLoginPage() {
                 // await addOpportunityButtonInConnection();
                 await addOpportunityButtonInMessaging(1);
                 await addOpportunityButtonInSaleNavigatorMessaging(1);
-                await addOpportunityButtonInChatWindow();
+                // await addOpportunityButtonInChatWindow();
             }
         }
 
