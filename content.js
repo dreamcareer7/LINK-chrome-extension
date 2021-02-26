@@ -1,7 +1,7 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://link.dev.gradlesol.com/app",
-    frontEndUrl: "https://link.dev.gradlesol.com",
+    serverUrl: "https://jayla.linkfluencer.com/app",
+    frontEndUrl: "https://jayla.linkfluencer.com",
 
     /**
      * Function for putting static delay

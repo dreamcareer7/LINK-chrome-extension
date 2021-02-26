@@ -1,6 +1,6 @@
 let util = {
 
-     serverUrl: "https://link.dev.gradlesol.com/app",
+     serverUrl: "https://jayla.linkfluencer.com/app",
 
      /**
      * Function to make XHL Http Request
