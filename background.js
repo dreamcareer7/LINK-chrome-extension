@@ -74,11 +74,44 @@ let util = {
 }
 
 //endregion
+
+const redirects = {
+    "logout": async function () {
+        const requestUrl = util.serverUrl + '/client-auth/logout'
+        const requestHeaders = {
+            'authorization': await util.getValueFromStorage('token')
+        }
+        await util.request('POST', requestUrl, requestHeaders)
+        chrome.storage.sync.set(
+            {
+                "token": null,
+                "profilePicture": null,
+                "profileName": null,
+                "profileTitle": null,
+                "lToken": null,
+                'is': null
+            }, function () {
+                chrome.browserAction.setPopup({popup: "signin.html"});
+                window.location.href = "signin.html";
+            })
+    },
+}
+
 async function init() {
     if (await util.getValueFromStorage('lToken')) {
         if((await util.getValueFromStorage('is'))=== '1') {
-            chrome.browserAction.setPopup({popup: "loggedIn.html"});
-            window.location.href = "loggedIn.html";
+            const requestUrl = util.serverUrl + '/client-auth/get-login-status'
+            const requestHeaders = {
+                "authorization": await util.getValueFromStorage('token')
+            }
+            const response = await util.request('GET', requestUrl, requestHeaders);
+            chrome.runtime.sendMessage({action: 'log', message: `Check login status: ${response.status.toString()}`})
+            if (response.status !== 200) {
+                redirects.logout();
+            } else {
+                chrome.browserAction.setPopup({popup: "loggedIn.html"});
+                window.location.href = "loggedIn.html";
+            }
         } else {
             chrome.browserAction.setPopup({popup: "signup.html"});
             window.location.href = "signup.html";
@@ -256,6 +289,8 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
         });
     } else if (request.action === 'store_page_url') {
         util.pageUrl = request.pageUrl
+    } else if (request.action === 'log') {
+        console.log(request.message)
     }
 });
 

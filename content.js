@@ -1,6 +1,7 @@
 //region UTILITIES
 var util = {
-    serverUrl: "https://jayla.linkfluencer.com/app",
+    serverUrl: "https://link.dev.gradlesol.com/app",
+    frontEndUrl: "https://link.dev.gradlesol.com",
 
     /**
      * Function for putting static delay
@@ -66,19 +67,22 @@ var util = {
      */
     addOpportunity: async function (opportunityData) {
         const requestUrl = util.serverUrl + '/opportunity/add-opportunity'
-
+        const accessToken = await util.getValueFromStorage("token")
         const requestHeaders = {
-            "Authorization": await util.getValueFromStorage("token")
+            "Authorization": accessToken
         }
 
-        const response = await util.request(
-            method = "POST",
-            url = requestUrl,
-            headers = requestHeaders,
-            data = opportunityData
-        )
+        const response = await util.request("POST", requestUrl, requestHeaders, opportunityData)
 
-        return response.status === 200;
+        if (response.status === 200) {
+            const data = JSON.parse(response.responseText).data
+            const url = util.frontEndUrl + `/auth-verify?token=${accessToken}&opportunityId=${data._id}`
+            console.log(url);
+            window.open(url, '_blank');
+            return true
+        } else {
+            return false
+        }
     },
 
     /**
@@ -884,7 +888,7 @@ async function checkForLoginPage() {
                 // await addOpportunityButtonInConnection();
                 await addOpportunityButtonInMessaging(1);
                 await addOpportunityButtonInSaleNavigatorMessaging(1);
-                await addOpportunityButtonInChatWindow();
+                // await addOpportunityButtonInChatWindow();
             }
         }
 
