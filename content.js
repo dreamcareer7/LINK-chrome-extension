@@ -190,7 +190,7 @@ async function addOpportunityButtonInLinkedinProfile() {
             "li.pv-top-card__distance-badge.inline-block.v-align-text-bottom.t-16.t-black--light.t-normal > " +
             "span > span.dist-value");
 
-        const opportunityButton = document.querySelector(
+        let opportunityButton = document.querySelector(
             "div.mt1.inline-flex.align-items-center.ember-view > #opportunity-button-profile");
 
         if (connectionType.textContent.trim().includes("1st")) {
@@ -210,6 +210,13 @@ async function addOpportunityButtonInLinkedinProfile() {
             const publicIdentifier =
                 profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
+
+            if (opportunityButton && opportunityButton.getAttribute("name") !== publicIdentifier) {
+                opportunityButton.parentElement.removeChild(opportunityButton);
+                opportunityButton = undefined;
+            }
+
+
             if (!opportunityButton) {
                 // Get opportunity
                 // console.log("Fetching opportunity profile")
@@ -226,6 +233,7 @@ async function addOpportunityButtonInLinkedinProfile() {
                     // buttonIcon.src = "https://ibb.co/tmCyJDC";
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
                     button.id = "opportunity-button-profile";
+                    button["name"] = publicIdentifier;
 
                     if (publicIdentifiers.includes(publicIdentifier)) {
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
@@ -269,27 +277,33 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
             "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > " +
             "dt.flex.align-items-center > ul > li > span.label-16dp.block");
 
-        const opportunityButton = document.querySelector(
+        let opportunityButton = document.querySelector(
             "dl.profile-topcard-person-entity__content-text.vertical-align-top.pl4 > dt.flex.align-items-center > " +
             "#opportunity-button-profile");
 
         if (connectionType.textContent.trim().includes("1st")) {
 
+            // Fetch public identifier of particular user
+            let profileUrl = document.querySelector(
+                'a[data-control-name="contact_see_more"]'
+            );
+
+            if (profileUrl) {
+                profileUrl = profileUrl.getAttribute("href");
+            } else {
+                profileUrl = await fetchProfileUrlSalesNavigator();
+            }
+
+            const profileUrlParts = profileUrl.split("/");
+            const publicIdentifier =
+                profileUrlParts[profileUrlParts.indexOf("in") + 1];
+
+            if (opportunityButton && opportunityButton.getAttribute("name") !== publicIdentifier) {
+                opportunityButton.parentElement.removeChild(opportunityButton);
+                opportunityButton = undefined;
+            }
+
             if (!opportunityButton) {
-                // Fetch public identifier of particular user
-                let profileUrl = document.querySelector(
-                    'a[data-control-name="contact_see_more"]'
-                );
-
-                if (profileUrl) {
-                    profileUrl = profileUrl.getAttribute("href");
-                } else {
-                    profileUrl = await fetchProfileUrlSalesNavigator();
-                }
-
-                const profileUrlParts = profileUrl.split("/");
-                const publicIdentifier =
-                    profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
                 // Get opportunity
                 // console.log("Fetching opportunity profile")
@@ -307,6 +321,7 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
                     // buttonIcon.src = "https://ibb.co/tmCyJDC";
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Loading</span>`
                     button.id = "opportunity-button-profile";
+                    button.name = publicIdentifier;
 
                     if (publicIdentifiers.includes(publicIdentifier)) {
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
