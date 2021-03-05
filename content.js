@@ -210,7 +210,6 @@ async function addOpportunityButtonInLinkedinProfile() {
             const publicIdentifier =
                 profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
-            console.log(opportunityButton.getAttribute("name"));
 
             if (opportunityButton && opportunityButton.getAttribute("name") !== publicIdentifier) {
                 opportunityButton.parentElement.removeChild(opportunityButton);
