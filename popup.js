@@ -65,18 +65,20 @@ const redirects = {
 
     "signup": function () {
 
-        chrome.storage.sync.set(
-            {
-                "token": null,
-                "profilePicture": null,
-                "profileName": null,
-                "profileTitle": null
-            }, function () {
-                chrome.browserAction.setPopup({popup: "signin.html"});
-                window.location.href = "signin.html";
-                const url = "https://linkfluencer.com/"
-                window.open(url, '_blank');
-            })
+        // chrome.storage.sync.set(
+        //     {
+        //         "token": null,
+        //         "profilePicture": null,
+        //         "profileName": null,
+        //         "profileTitle": null
+        //     }, function () {
+        //         chrome.browserAction.setPopup({popup: "signin.html"});
+        //         window.location.href = "signin.html";
+        //         const url = "https://linkfluencer.com/"
+        //         window.open(url, '_blank');
+        //     })
+        const url = "https://linkfluencer.com/"
+        window.open(url, '_blank');
     },
 
     "logout": async function () {
@@ -106,18 +108,41 @@ const redirects = {
 
 window.onload = async function() {
     if (await util.getValueFromStorage('lToken')) {
-        if((await util.getValueFromStorage('is'))=== '1') {
-            const requestUrl = util.serverUrl + '/client-auth/get-login-status'
-            const requestHeaders = {
-                "authorization": await util.getValueFromStorage('token')
-            }
+        const is = await util.getValueFromStorage('is');
+        // if((await util.getValueFromStorage('is'))=== '1') {
+        const requestUrl = util.serverUrl + `/client-auth/get-login-status?is=${is}`;
+        const requestHeaders = {};
+        if (is === '1') {
+            requestHeaders.authorization = await util.getValueFromStorage('token')
+        } else if (is === '0') {
+            requestHeaders.authorization = await util.getValueFromStorage('lToken');
+        }
             const response = await util.request('GET', requestUrl, requestHeaders);
-            chrome.runtime.sendMessage({action: 'log', message: `Check login status: ${response.status.toString()}`})
+            chrome.runtime.sendMessage({action: 'log', message: `Check login status: ${response.status.toString()}`});
             if (response.status !== 200) {
                 redirects.logout();
-                chrome.runtime.sendMessage({action: 'log', message: 'Logout'})
+            } else {
+                const responseBody = JSON.parse(response.responseText).data;
+                if (is === '0' && responseBody.is === '1') {
+                    chrome.storage.sync.set({
+                            token: responseBody.token,
+                            lToken: responseBody.lToken,
+                            isSubscribe: true,
+                            profilePicture: responseBody.profilePicture,
+                            profileName: responseBody.profileName,
+                            profileTitle: responseBody.profileTitle,
+                            is: responseBody.is
+                        }, async function () {
+                            // console.log("STORED", await util.getValueFromStorage("token"), await util.getValueFromStorage("isSubscribe"));
+                            chrome.browserAction.setPopup({popup: "loggedIn.html"});
+                            window.location.href = "loggedIn.html";
+                        }
+                    );
+                } else if (is === '1' && responseBody.is === '0') {
+                    redirects.logout();
+                }
             }
-        }
+        // }
     }
 }
 
@@ -160,7 +185,7 @@ async function dynamicProfileContentFilling() {
             profileNameHandler.innerText = profileName
         }
     }
-    const profileTitleHandler = document.getElementById("profileTitle")
+    const profileTitleHandler = document.getElementById("profileTitle");
     if (profileTitleHandler) {
         // console.log('In profile title')
         const profileTitle = await util.getValueFromStorage('profileTitle');
