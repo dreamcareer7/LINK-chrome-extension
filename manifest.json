@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Jayla",
-  "version": "1.7",
+  "version": "1.8",
   "description": "LinkedIn Lead Generation Management & CRM Software",
   "web_accessible_resources": [
     "img/*.svg"
