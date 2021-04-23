@@ -124,6 +124,17 @@ var util = {
 
         return JSON.parse(response.responseText)
     },
+
+    opportunityButtonTextMonitor: function (button, publicIdentifier) {
+        const host = ''
+        const websocket = new WebSocket(host);
+
+        websocket.onmessage = function (message) {
+            if (message.type === 'CHANGE_BUTTON_TEXT' && message.publicIdentifier === publicIdentifier) {
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>message.buttonText</span>`
+            }
+        }
+    }
 }
 
 //endregion
@@ -241,6 +252,9 @@ async function addOpportunityButtonInLinkedinProfile() {
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                     }
 
+                    // Start opportunity button text monitor websocket
+                    util.opportunityButtonTextMonitor(button, publicIdentifier)
+
                     // Add onClick event function for "Opportunity" button
                     button.onclick = async function onClickUpdateButton() {
                         button.disabled = true
@@ -328,6 +342,9 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
                     } else {
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                     }
+
+                    // Start opportunity button text monitor websocket
+                    util.opportunityButtonTextMonitor(button, publicIdentifier)
 
                     // Add onClick event function for "Opportunity" button
                     button.onclick = async function onClickUpdateButton() {
@@ -432,6 +449,9 @@ async function addOpportunityButtonInConnection() {
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
                 }
 
+                // Start opportunity button text monitor websocket
+                util.opportunityButtonTextMonitor(button, publicIdentifier)
+
                 // Add onClick event function for "Opportunity" button
                 button.onclick = async function onClickUpdateButton() {
                     button.disabled = true
@@ -503,6 +523,9 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
             } else {
                 button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
             }
+
+            // Start opportunity button text monitor websocket
+            util.opportunityButtonTextMonitor(button, publicIdentifier)
 
             // Add onClick event function for "Opportunity" button
             button.onclick = async function onClickUpdateButton() {
@@ -585,6 +608,9 @@ async function addOpportunityButtonInChatSection() {
             } else {
                 button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
             }
+
+            // Start opportunity button text monitor websocket
+            util.opportunityButtonTextMonitor(button, publicIdentifier)
 
             // Add onClick event function for "Opportunity" button
             button.onclick = async function onClickUpdateButton() {
@@ -716,6 +742,9 @@ async function addOpportunityButtonUnderChat() {
         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>-----</span>`;
         button.disabled = true
 
+        // Start opportunity button text monitor websocket
+        util.opportunityButtonTextMonitor(button, publicIdentifier)
+
         // Add onClick event function for "Opportunity" button
         button.onclick = async function onClickUpdateButton(event) {
             event.stopPropagation();
@@ -823,6 +852,9 @@ async function addOpportunityButtonInChatWindow() {
                     } else {
                         button.innerHTML = `<span>Add</span>`
                     }
+
+                    // Start opportunity button text monitor websocket
+                    util.opportunityButtonTextMonitor(button, publicIdentifier)
 
                     // Add onClick event function for "Opportunity" button
                     button.onclick = async function onClickUpdateButton(event) {
