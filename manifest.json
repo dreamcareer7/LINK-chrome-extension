@@ -18,6 +18,9 @@
       ],
       "matches": [
         "https://www.linkedin.com/*"
+      ],
+      "js": [
+        "libraries/socketIO.js"
       ]
     }
   ],

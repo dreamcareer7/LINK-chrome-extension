@@ -127,15 +127,11 @@ var util = {
     },
 
     opportunityButtonTextMonitor: async function (button, publicIdentifier) {
-        const websocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}`);
-
-        websocket.on("connection", socket => {
-            console.log("Button text monitor socket connected")
-            socket.on("message", message => {
-                if (message.type === 'CHANGE_BUTTON_TEXT' && message.publicIdentifier === publicIdentifier) {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>message.buttonText</span>`
-                }
-            })
+        const websocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}&request_from=extension`);
+        websocket.on("changechange-button-text", data => {
+            if (data.publicIdentifier === publicIdentifier) {
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>${data.buttonText}</span>`
+            }
         })
     }
 }
@@ -155,7 +151,7 @@ function fetchPublicIdentifierLinkedin() {
     }
 }
 
-async function fetchProfileUrlSalesNavigator(profileUrl=null) {
+async function fetchProfileUrlSalesNavigator(profileUrl = null) {
     // Create request url
     if (profileUrl === null) {
         profileUrl = document.URL
@@ -501,7 +497,7 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
             let profileLink;
             try {
                 profileLink = document.querySelector('a[data-control-name="view_profile"]').getAttribute('href')
-            } catch(e) {
+            } catch (e) {
                 return
             }
             const profileUrl = await fetchProfileUrlSalesNavigator(profileLink)
@@ -556,7 +552,7 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
 async function addOpportunityButtonInSaleNavigatorMessaging(location = 1) {
     if (location === 1) {
         await addOpportunityButtonInSalesNavigatorChatSection();
-    }else {
+    } else {
         // console.error(`No Location ${location.toString()} exists`)
     }
 }
@@ -930,14 +926,6 @@ async function checkForLoginPage() {
                     })
                 } catch (e) {
 
-                }
-
-                const socketIOLibraryElement = document.getElementById('socket-io-library');
-                if (!socketIOLibraryElement) {
-                    const socketIOLibrary = document.createElement("script");
-                    socketIOLibrary.id = 'socket-io-library'
-                    socketIOLibrary.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js'
-                    document.body.appendChild(socketIOLibrary)
                 }
 
                 // console.log(await fetchPublicIdentifierLinkedin())
