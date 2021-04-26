@@ -2,6 +2,7 @@
 var util = {
     serverUrl: "https://link.dev.gradlesol.com/app",
     frontEndUrl: "https://link.dev.gradlesol.com",
+    socketUrl: 'wss://link.dev.gradlesol.com/app',
 
     /**
      * Function for putting static delay
@@ -125,15 +126,17 @@ var util = {
         return JSON.parse(response.responseText)
     },
 
-    opportunityButtonTextMonitor: function (button, publicIdentifier) {
-        const host = ''
-        const websocket = new WebSocket(host);
+    opportunityButtonTextMonitor: async function (button, publicIdentifier) {
+        const websocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}`);
 
-        websocket.onmessage = function (message) {
-            if (message.type === 'CHANGE_BUTTON_TEXT' && message.publicIdentifier === publicIdentifier) {
-                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>message.buttonText</span>`
-            }
-        }
+        websocket.on("connection", socket => {
+            console.log("Button text monitor socket connected")
+            socket.on("message", message => {
+                if (message.type === 'CHANGE_BUTTON_TEXT' && message.publicIdentifier === publicIdentifier) {
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>message.buttonText</span>`
+                }
+            })
+        })
     }
 }
 
@@ -909,7 +912,6 @@ async function checkForLoginPage() {
 }
 
 (async function () {
-
     chrome.runtime.sendMessage({action: 'store_page_url', pageUrl: document.URL})
 
     const accessToken = await util.getValueFromStorage("token");
@@ -929,6 +931,15 @@ async function checkForLoginPage() {
                 } catch (e) {
 
                 }
+
+                const socketIOLibraryElement = document.getElementById('socket-io-library');
+                if (!socketIOLibraryElement) {
+                    const socketIOLibrary = document.createElement("script");
+                    socketIOLibrary.id = 'socket-io-library'
+                    socketIOLibrary.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js'
+                    document.body.appendChild(socketIOLibrary)
+                }
+
                 // console.log(await fetchPublicIdentifierLinkedin())
                 await addOpportunityButtonInLinkedinProfile();
                 await addOpportunityButtonInSalesNavigatorProfile();
