@@ -128,7 +128,7 @@ var util = {
 
     opportunityButtonTextMonitor: async function (button, publicIdentifier) {
         const websocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}&request_from=extension`);
-        websocket.on("changechange-button-text", data => {
+        websocket.on("change-button-text", data => {
             if (data.publicIdentifier === publicIdentifier) {
                 button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>${data.buttonText}</span>`
             }

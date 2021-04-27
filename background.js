@@ -12,6 +12,13 @@ async function resetValidation() {
 
 let util = {
     serverUrl: "https://link.dev.gradlesol.com/app",
+    socketUrl: 'wss://link.dev.gradlesol.com/app',
+
+    // Minimum time duration to send tracking info
+    minTimeTrackingDurationInMilliseconds: 2 * 1000,
+
+    // Time tracking to send periodic tracking status
+    timeTrackingDurationInMilliseconds: 15 * 60 * 1000,
 
     pageUrl: '',
 
@@ -70,6 +77,17 @@ let util = {
                 }
             })
         })
+    },
+
+    setValuesInStorage: async function (data) {
+        if (typeof a !== "object" && Array.isArray(a)) {
+            throw new Error('type of data should be an object')
+        }
+        await new Promise(resolve => {
+            chrome.storage.sync.set(data, () => {
+                resolve()
+            })
+        })
     }
 }
 
@@ -99,7 +117,7 @@ const redirects = {
 
 async function init() {
     if (await util.getValueFromStorage('lToken')) {
-        if((await util.getValueFromStorage('is'))=== '1') {
+        if ((await util.getValueFromStorage('is')) === '1') {
             const requestUrl = util.serverUrl + '/client-auth/get-login-status'
             const requestHeaders = {
                 "authorization": await util.getValueFromStorage('token')
@@ -118,6 +136,7 @@ async function init() {
         }
     }
 }
+
 init()
 
 async function fetchProfileUrlSalesNavigator() {
@@ -333,7 +352,7 @@ chrome.webRequest.onCompleted.addListener(async function (details) {
         action = true
     }
 
-    if (action && (await util.getValueFromStorage('is') === '1')){
+    if (action && (await util.getValueFromStorage('is') === '1')) {
         const profileUrlParts = profileUrl.split('/')
         const publicIdentifier = profileUrlParts[profileUrlParts.indexOf("in") + 1];
 
@@ -364,3 +383,98 @@ chrome.webNavigation.onCompleted.addListener(function () {
         }
     });
 });
+
+let timeTrackingSocket = null
+let startTime = null
+
+async function sendTimeTrackingInfo(endTime) {
+    timeTrackingSocket.emit('time-tracking', {
+        startTime: startTime,
+        endTime: endTime,
+        token: await util.getValueFromStorage('token')
+    })
+}
+
+function processTimeTrackingInfo(tabId = null) {
+    if (!startTime && tabId) {
+        chrome.tabs.get(tabId, function (tab) {
+            if (tab.url.includes('https://www.youtube.com')) {
+                startTime = new Date()
+                console.log('Start time set: ', startTime)
+            }
+        })
+    } else if (startTime) {
+        const endTime = new Date()
+        const timeDuration = endTime.getTime() - startTime.getTime()
+        console.log('Time duration:', timeDuration / 1000, 'Minimum Time duration:', util.minTimeTrackingDurationInMilliseconds / 1000)
+
+        if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
+            console.log('Sending time tracking status because duration satisfied')
+            sendTimeTrackingInfo(endTime)
+            if (tabId) {
+                chrome.tabs.get(tabId, function (tab) {
+                    if (tab.url.includes('https://www.youtube.com')) {
+                        startTime = endTime
+                        console.log('Start time updated:', startTime)
+                    } else {
+                        startTime = null
+                        console.log('Start time cleaned because of other tab url')
+                    }
+                })
+            } else {
+                startTime = null
+                console.log('Start time cleaned because of all window minimized')
+            }
+        } else {
+            if (tabId) {
+                chrome.tabs.get(tabId, function (tab) {
+                    if (!tab.url.includes('https://www.youtube.com')) {
+                        startTime = null
+                        console.log('Start time cleaned because of other tab url')
+                    }
+                })
+            } else {
+                startTime = null
+                console.log('Start time cleaned because of all window minimized')
+            }
+        }
+    }
+}
+
+async function timeTracker() {
+    timeTrackingSocket = io.connect(util.socketUrl + `token=${await util.getValueFromStorage('token')}&request_from=extension`);
+
+    chrome.windows.onFocusChanged.addListener(function (windowId) {
+        if (windowId === -1) {
+            console.log('called for all minimized')
+            processTimeTrackingInfo()
+        } else {
+            chrome.windows.get(windowId, function (chromeWindow) {
+                if (chromeWindow.state === "minimized") {
+                } else {
+                    chrome.tabs.query({active: true, windowId: windowId}, function (tabs) {
+                        console.log('called for window focus changed')
+                        processTimeTrackingInfo(tabs[0].id)
+                    })
+                }
+            });
+        }
+    });
+
+
+    // If tab is activated then do below
+    chrome.tabs.onActivated.addListener((activeInfo) => {
+        console.log('called for tab activated')
+        processTimeTrackingInfo(activeInfo.tabId)
+    })
+
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+        if (changeInfo.status === 'complete') {
+            console.log('called for tab updated')
+            processTimeTrackingInfo(tabId)
+        }
+    })
+
+
+}
+// timeTracker()
