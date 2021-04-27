@@ -246,7 +246,7 @@ async function addOpportunityButtonInLinkedinProfile() {
                     button["name"] = publicIdentifier;
 
                     if (publicIdentifiers.includes(publicIdentifier)) {
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                     } else {
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                     }
@@ -263,7 +263,7 @@ async function addOpportunityButtonInLinkedinProfile() {
                         const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                         if (result) {
-                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                         } else {
                             button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                         }
@@ -337,7 +337,7 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
                     button.name = publicIdentifier;
 
                     if (publicIdentifiers.includes(publicIdentifier)) {
-                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                        button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                     } else {
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                     }
@@ -354,7 +354,7 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
                         const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                         if (result) {
-                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                         } else {
                             button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                         }
@@ -518,7 +518,7 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
             button.id = "opportunity-button-messaging-sales-navigator";
 
             if (publicIdentifiers.includes(publicIdentifier)) {
-                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
             } else {
                 button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
             }
@@ -535,7 +535,7 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
                 const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                 if (result) {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                 } else {
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                 }
@@ -603,7 +603,7 @@ async function addOpportunityButtonInChatSection() {
             button.id = "opportunity-button-messaging";
 
             if (publicIdentifiers.includes(publicIdentifier)) {
-                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
             } else {
                 button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
             }
@@ -620,7 +620,7 @@ async function addOpportunityButtonInChatSection() {
                 const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                 if (result) {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                 } else {
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                 }
