@@ -2,7 +2,7 @@
 var util = {
     serverUrl: "https://link.dev.gradlesol.com/app",
     frontEndUrl: "https://link.dev.gradlesol.com",
-    socketUrl: 'wss://link.dev.gradlesol.com/app',
+    socketUrl: 'wss://link.dev.gradlesol.com',
 
     /**
      * Function for putting static delay
