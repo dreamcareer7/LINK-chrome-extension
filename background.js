@@ -12,7 +12,7 @@ async function resetValidation() {
 
 let util = {
     serverUrl: "https://jayla.linkfluencer.com/app",
-    socketUrl: 'wss://link.dev.gradlesol.com',
+    socketUrl: 'wss://jayla.linkfluencer.com',
 
     // Minimum time duration to send tracking info
     minTimeTrackingDurationInMilliseconds: 2 * 1000,

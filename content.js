@@ -2,7 +2,7 @@
 var util = {
     serverUrl: "https://jayla.linkfluencer.com/app",
     frontEndUrl: "https://jayla.linkfluencer.com",
-    socketUrl: 'wss://link.dev.gradlesol.com',
+    socketUrl: 'wss://jayla.linkfluencer.com',
 
     /**
      * Function for putting static delay
