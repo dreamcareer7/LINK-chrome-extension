@@ -1,45 +1,50 @@
 {
-  "manifest_version": 2,
-  "name": "Jayla",
-  "version": "1.8",
-  "description": "LinkedIn Lead Generation Management & CRM Software",
-  "web_accessible_resources": [
-    "img/*.svg"
-  ],
-  "background": {
-    "scripts": [
-      "background.js"
-    ]
-  },
-  "content_scripts": [
-    {
-      "css": [
-        "styles.css"
-      ],
-      "matches": [
-        "https://www.linkedin.com/*"
-      ]
+    "manifest_version": 2,
+    "name": "Jayla",
+    "version": "1.8",
+    "description": "LinkedIn Lead Generation Management & CRM Software",
+    "web_accessible_resources": [
+        "img/*.svg"
+    ],
+    "background": {
+        "scripts": [
+            "libraries/socketIO.js",
+            "background.js"
+        ]
+    },
+    "content_scripts": [
+        {
+            "css": [
+                "styles.css"
+            ],
+            "matches": [
+                "https://www.linkedin.com/*"
+            ],
+            "js": [
+                "libraries/socketIO.js"
+            ]
+        }
+    ],
+    "icons": {
+        "16": "img/lf_icon.png",
+        "48": "img/lf_icon.png",
+        "128": "img/lf_icon.png"
+    },
+    "permissions": [
+        "storage",
+        "cookies",
+        "webNavigation",
+        "webRequest",
+        "tabs",
+        "https://www.linkedin.com/*",
+        "https://link.dev.gradlesol.com/app/*",
+        "https://link.dev.humanpixel.com.au/app/*",
+        "https://link.test.humanpixel.com.au/app/*",
+        "https://jayla.ai/app/*",
+        "https://jayla.linkfluencer.com/app/*"
+    ],
+    "browser_action": {
+        "default_icon": "img/lf_logo_top.png",
+        "default_popup": "signin.html"
     }
-  ],
-  "icons": {
-    "16": "img/lf_icon.png",
-    "48": "img/lf_icon.png",
-    "128": "img/lf_icon.png"
-  },
-  "permissions": [
-    "storage",
-    "cookies",
-    "webNavigation",
-    "webRequest",
-    "https://www.linkedin.com/*",
-    "https://link.dev.gradlesol.com/app/*",
-    "https://link.dev.humanpixel.com.au/app/*",
-    "https://link.test.humanpixel.com.au/app/*",
-    "https://jayla.ai/app/*",
-    "https://jayla.linkfluencer.com/app/*"
-  ],
-  "browser_action": {
-    "default_icon": "img/lf_logo_top.png",
-    "default_popup": "signin.html"
-  }
 }

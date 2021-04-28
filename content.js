@@ -2,6 +2,7 @@
 var util = {
     serverUrl: "https://jayla.linkfluencer.com/app",
     frontEndUrl: "https://jayla.linkfluencer.com",
+    socketUrl: 'wss://link.dev.gradlesol.com',
 
     /**
      * Function for putting static delay
@@ -77,7 +78,6 @@ var util = {
         if (response.status === 200) {
             const data = JSON.parse(response.responseText).data
             const url = util.frontEndUrl + `/auth-verify?token=${accessToken}&opportunityId=${data._id}`
-            console.log(url);
             window.open(url, '_blank');
             return true
         } else {
@@ -124,6 +124,15 @@ var util = {
 
         return JSON.parse(response.responseText)
     },
+
+    opportunityButtonTextMonitor: async function (button, publicIdentifier) {
+        const websocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}&request_from=extension`);
+        websocket.on("change-button-text", data => {
+            if (data.publicIdentifier === publicIdentifier) {
+                button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>${data.buttonText}</span>`
+            }
+        })
+    }
 }
 
 //endregion
@@ -141,7 +150,7 @@ function fetchPublicIdentifierLinkedin() {
     }
 }
 
-async function fetchProfileUrlSalesNavigator(profileUrl=null) {
+async function fetchProfileUrlSalesNavigator(profileUrl = null) {
     // Create request url
     if (profileUrl === null) {
         profileUrl = document.URL
@@ -241,6 +250,9 @@ async function addOpportunityButtonInLinkedinProfile() {
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                     }
 
+                    // Start opportunity button text monitor websocket
+                    util.opportunityButtonTextMonitor(button, publicIdentifier)
+
                     // Add onClick event function for "Opportunity" button
                     button.onclick = async function onClickUpdateButton() {
                         button.disabled = true
@@ -250,7 +262,7 @@ async function addOpportunityButtonInLinkedinProfile() {
                         const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                         if (result) {
-                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                         } else {
                             button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                         }
@@ -329,6 +341,9 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
                         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                     }
 
+                    // Start opportunity button text monitor websocket
+                    util.opportunityButtonTextMonitor(button, publicIdentifier)
+
                     // Add onClick event function for "Opportunity" button
                     button.onclick = async function onClickUpdateButton() {
                         button.disabled = true
@@ -338,7 +353,7 @@ async function addOpportunityButtonInSalesNavigatorProfile() {
                         const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                         if (result) {
-                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                            button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                         } else {
                             button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                         }
@@ -432,6 +447,9 @@ async function addOpportunityButtonInConnection() {
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add</span>`
                 }
 
+                // Start opportunity button text monitor websocket
+                util.opportunityButtonTextMonitor(button, publicIdentifier)
+
                 // Add onClick event function for "Opportunity" button
                 button.onclick = async function onClickUpdateButton() {
                     button.disabled = true
@@ -478,7 +496,7 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
             let profileLink;
             try {
                 profileLink = document.querySelector('a[data-control-name="view_profile"]').getAttribute('href')
-            } catch(e) {
+            } catch (e) {
                 return
             }
             const profileUrl = await fetchProfileUrlSalesNavigator(profileLink)
@@ -504,6 +522,9 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
                 button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
             }
 
+            // Start opportunity button text monitor websocket
+            util.opportunityButtonTextMonitor(button, publicIdentifier)
+
             // Add onClick event function for "Opportunity" button
             button.onclick = async function onClickUpdateButton() {
                 button.disabled = true
@@ -513,7 +534,7 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
                 const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                 if (result) {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                 } else {
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                 }
@@ -530,7 +551,7 @@ async function addOpportunityButtonInSalesNavigatorChatSection() {
 async function addOpportunityButtonInSaleNavigatorMessaging(location = 1) {
     if (location === 1) {
         await addOpportunityButtonInSalesNavigatorChatSection();
-    }else {
+    } else {
         // console.error(`No Location ${location.toString()} exists`)
     }
 }
@@ -586,6 +607,9 @@ async function addOpportunityButtonInChatSection() {
                 button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
             }
 
+            // Start opportunity button text monitor websocket
+            util.opportunityButtonTextMonitor(button, publicIdentifier)
+
             // Add onClick event function for "Opportunity" button
             button.onclick = async function onClickUpdateButton() {
                 button.disabled = true
@@ -595,7 +619,7 @@ async function addOpportunityButtonInChatSection() {
                 const result = await util.addOpportunity({publicIdentifier: publicIdentifier})
 
                 if (result) {
-                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Update Opportunity</span>`
+                    button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Add Opportunity</span>`
                 } else {
                     button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>Retry</span>`
                 }
@@ -716,6 +740,9 @@ async function addOpportunityButtonUnderChat() {
         button.innerHTML = `<img src="${chrome.extension.getURL('img/opportunityButtonIcon.svg')}"/><span>-----</span>`;
         button.disabled = true
 
+        // Start opportunity button text monitor websocket
+        util.opportunityButtonTextMonitor(button, publicIdentifier)
+
         // Add onClick event function for "Opportunity" button
         button.onclick = async function onClickUpdateButton(event) {
             event.stopPropagation();
@@ -824,6 +851,9 @@ async function addOpportunityButtonInChatWindow() {
                         button.innerHTML = `<span>Add</span>`
                     }
 
+                    // Start opportunity button text monitor websocket
+                    util.opportunityButtonTextMonitor(button, publicIdentifier)
+
                     // Add onClick event function for "Opportunity" button
                     button.onclick = async function onClickUpdateButton(event) {
                         event.stopPropagation();
@@ -877,7 +907,6 @@ async function checkForLoginPage() {
 }
 
 (async function () {
-
     chrome.runtime.sendMessage({action: 'store_page_url', pageUrl: document.URL})
 
     const accessToken = await util.getValueFromStorage("token");
@@ -897,6 +926,7 @@ async function checkForLoginPage() {
                 } catch (e) {
 
                 }
+
                 // console.log(await fetchPublicIdentifierLinkedin())
                 await addOpportunityButtonInLinkedinProfile();
                 await addOpportunityButtonInSalesNavigatorProfile();
