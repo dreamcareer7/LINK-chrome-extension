@@ -400,7 +400,7 @@ let periodicTimeTracking = null
 function processTimeTrackingInfo(tabId = null) {
     if (!startTime && tabId) {
         chrome.tabs.get(tabId, function (tab) {
-            if (tab.url.includes('chrome://extensions/')) {
+            if (tab.url.includes('https://www.linkedin.com')) {
                 startTime = new Date()
             }
         })
@@ -413,7 +413,7 @@ function processTimeTrackingInfo(tabId = null) {
             sendTimeTrackingInfo(endTime)
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
-                    if (tab.url.includes('chrome://extensions/')) {
+                    if (tab.url.includes('https://www.linkedin.com')) {
                         startTime = endTime
                     } else {
                         startTime = null
@@ -425,7 +425,7 @@ function processTimeTrackingInfo(tabId = null) {
         } else {
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
-                    if (!tab.url.includes('chrome://extensions/')) {
+                    if (!tab.url.includes('https://www.linkedin.com')) {
                         startTime = null
                     }
                 })
