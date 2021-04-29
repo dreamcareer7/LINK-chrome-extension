@@ -395,6 +395,8 @@ async function sendTimeTrackingInfo(endTime) {
     })
 }
 
+let periodicTimeTracking = null
+
 function processTimeTrackingInfo(tabId = null) {
     if (!startTime && tabId) {
         chrome.tabs.get(tabId, function (tab) {
@@ -440,6 +442,22 @@ function processTimeTrackingInfo(tabId = null) {
         }
     }
 }
+
+function sendPeriodicTimeTracking() {
+    console.log('Setting periodic status sending')
+    periodicTimeTracking = setTimeout(function () {
+        console.log('Calling periodic status function')
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+            if (tabs.length) {
+                console.log('Calling processTimeTrackingInfo function', tabs)
+                processTimeTrackingInfo(tabs[0].id)
+            }
+            sendPeriodicTimeTracking()
+        })
+    }, util.timeTrackingDurationInMilliseconds)
+}
+
+// sendPeriodicTimeTracking()
 
 async function timeTracker() {
     timeTrackingSocket = io.connect(util.socketUrl + `token=${await util.getValueFromStorage('token')}&request_from=extension`);
