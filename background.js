@@ -18,7 +18,7 @@ let util = {
     minTimeTrackingDurationInMilliseconds: 2 * 1000,
 
     // Time tracking to send periodic tracking status
-    timeTrackingDurationInMilliseconds: 15 * 60 * 1000,
+    timeTrackingDurationInMilliseconds: 5 * 60 * 1000,
 
     pageUrl: '',
 
@@ -386,8 +386,11 @@ chrome.webNavigation.onCompleted.addListener(function () {
 
 let timeTrackingSocket = null
 let startTime = null
+let timeSpend = 0
 
 async function sendTimeTrackingInfo(endTime) {
+    timeSpend += (endTime.getTime() - startTime.getTime())
+    console.log('Total Time Spend:', timeSpend / 1000)
     timeTrackingSocket.emit('time-tracking', {
         startTime: startTime,
         endTime: endTime,
@@ -400,7 +403,7 @@ let periodicTimeTracking = null
 function processTimeTrackingInfo(tabId = null) {
     if (!startTime && tabId) {
         chrome.tabs.get(tabId, function (tab) {
-            if (tab.url.includes('https://www.youtube.com')) {
+            if (tab.url.includes('chrome://extensions/')) {
                 startTime = new Date()
                 console.log('Start time set: ', startTime)
             }
@@ -412,10 +415,11 @@ function processTimeTrackingInfo(tabId = null) {
 
         if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
             console.log('Sending time tracking status because duration satisfied')
+
             sendTimeTrackingInfo(endTime)
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
-                    if (tab.url.includes('https://www.youtube.com')) {
+                    if (tab.url.includes('chrome://extensions/')) {
                         startTime = endTime
                         console.log('Start time updated:', startTime)
                     } else {
@@ -430,7 +434,7 @@ function processTimeTrackingInfo(tabId = null) {
         } else {
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
-                    if (!tab.url.includes('https://www.youtube.com')) {
+                    if (!tab.url.includes('chrome://extensions/')) {
                         startTime = null
                         console.log('Start time cleaned because of other tab url')
                     }
@@ -457,10 +461,10 @@ function sendPeriodicTimeTracking() {
     }, util.timeTrackingDurationInMilliseconds)
 }
 
-// sendPeriodicTimeTracking()
+sendPeriodicTimeTracking()
 
 async function timeTracker() {
-    timeTrackingSocket = io.connect(util.socketUrl + `token=${await util.getValueFromStorage('token')}&request_from=extension`);
+    timeTrackingSocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}&request_from=extension`);
 
     chrome.windows.onFocusChanged.addListener(function (windowId) {
         if (windowId === -1) {
@@ -495,4 +499,5 @@ async function timeTracker() {
 
 
 }
-// timeTracker()
+
+timeTracker()
