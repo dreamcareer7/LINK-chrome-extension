@@ -386,11 +386,8 @@ chrome.webNavigation.onCompleted.addListener(function () {
 
 let timeTrackingSocket = null
 let startTime = null
-let timeSpend = 0
 
 async function sendTimeTrackingInfo(endTime) {
-    timeSpend += (endTime.getTime() - startTime.getTime())
-    console.log('Total Time Spend:', timeSpend / 1000)
     timeTrackingSocket.emit('time-tracking', {
         startTime: startTime,
         endTime: endTime,
@@ -405,55 +402,44 @@ function processTimeTrackingInfo(tabId = null) {
         chrome.tabs.get(tabId, function (tab) {
             if (tab.url.includes('chrome://extensions/')) {
                 startTime = new Date()
-                console.log('Start time set: ', startTime)
             }
         })
     } else if (startTime) {
         const endTime = new Date()
         const timeDuration = endTime.getTime() - startTime.getTime()
-        console.log('Time duration:', timeDuration / 1000, 'Minimum Time duration:', util.minTimeTrackingDurationInMilliseconds / 1000)
 
         if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
-            console.log('Sending time tracking status because duration satisfied')
 
             sendTimeTrackingInfo(endTime)
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
                     if (tab.url.includes('chrome://extensions/')) {
                         startTime = endTime
-                        console.log('Start time updated:', startTime)
                     } else {
                         startTime = null
-                        console.log('Start time cleaned because of other tab url')
                     }
                 })
             } else {
                 startTime = null
-                console.log('Start time cleaned because of all window minimized')
             }
         } else {
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
                     if (!tab.url.includes('chrome://extensions/')) {
                         startTime = null
-                        console.log('Start time cleaned because of other tab url')
                     }
                 })
             } else {
                 startTime = null
-                console.log('Start time cleaned because of all window minimized')
             }
         }
     }
 }
 
 function sendPeriodicTimeTracking() {
-    console.log('Setting periodic status sending')
     periodicTimeTracking = setTimeout(function () {
-        console.log('Calling periodic status function')
         chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
             if (tabs.length) {
-                console.log('Calling processTimeTrackingInfo function', tabs)
                 processTimeTrackingInfo(tabs[0].id)
             }
             sendPeriodicTimeTracking()
@@ -468,14 +454,12 @@ async function timeTracker() {
 
     chrome.windows.onFocusChanged.addListener(function (windowId) {
         if (windowId === -1) {
-            console.log('called for all minimized')
             processTimeTrackingInfo()
         } else {
             chrome.windows.get(windowId, function (chromeWindow) {
                 if (chromeWindow.state === "minimized") {
                 } else {
                     chrome.tabs.query({active: true, windowId: windowId}, function (tabs) {
-                        console.log('called for window focus changed')
                         processTimeTrackingInfo(tabs[0].id)
                     })
                 }
@@ -486,13 +470,11 @@ async function timeTracker() {
 
     // If tab is activated then do below
     chrome.tabs.onActivated.addListener((activeInfo) => {
-        console.log('called for tab activated')
         processTimeTrackingInfo(activeInfo.tabId)
     })
 
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         if (changeInfo.status === 'complete') {
-            console.log('called for tab updated')
             processTimeTrackingInfo(tabId)
         }
     })
