@@ -484,13 +484,13 @@ function sendPeriodicTimeTracking() {
 
 function periodicWindowMinimizeChecking() {
     setInterval(function () {
-        chrome.windows.getCurrent(function (window) {
+        chrome.windows.getCurrent(async function (window) {
             if (!chrome.runtime.lastError && window) {
                 if (!window.focused && startTime) {
                     const endTime = new Date()
                     const timeDuration = endTime.getTime() - startTime.getTime()
                     if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
-                        sendTimeTrackingInfo(endTime)
+                        await sendTimeTrackingInfo(endTime)
                         startTime = null
                     }
                 } else if (window.focused) {
