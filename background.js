@@ -21,7 +21,8 @@ let util = {
     timeTrackingDurationInMilliseconds: 5 * 60 * 1000,
 
     // This is the time duration for checking if all window has been minimized
-    timeDurationForCheckingAllWindowMinimizedInMilliseconds: 5 * 1000,
+    // [ALERT] Please enter value for below key less than "minTimeTrackingDurationInMilliseconds" and greater than 0
+    timeDurationForCheckingAllWindowMinimizedInMilliseconds: 1.5 * 1000,
 
     pageUrl: '',
 
@@ -482,7 +483,6 @@ function sendPeriodicTimeTracking() {
 function periodicWindowMinimizeChecking() {
     setInterval(function () {
         chrome.windows.getCurrent(function (window) {
-            console.log(window.focused, startTime)
             if (!window.focused && startTime) {
                 const endTime = new Date()
                 const timeDuration = endTime.getTime() - startTime.getTime()
@@ -490,9 +490,15 @@ function periodicWindowMinimizeChecking() {
                     sendTimeTrackingInfo(endTime)
                     startTime = null
                 }
+            } else if (window.focused) {
+                chrome.tabs.getCurrent(function (tab) {
+                    if (tab.url.includes('https://www.linkedin.com')) {
+                        startTime = new Date()
+                    }
+                })
             }
         })
-    }, 1000)
+    }, util.timeDurationForCheckingAllWindowMinimizedInMilliseconds)
 }
 
 timeTracker()
