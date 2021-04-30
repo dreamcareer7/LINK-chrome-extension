@@ -18,7 +18,11 @@ let util = {
     minTimeTrackingDurationInMilliseconds: 2 * 1000,
 
     // Time tracking to send periodic tracking status
-    timeTrackingDurationInMilliseconds: 15 * 60 * 1000,
+    timeTrackingDurationInMilliseconds: 60 * 1000,
+
+    // This is the time duration for checking if all window has been minimized
+    // [ALERT] Please enter value for below key less than "minTimeTrackingDurationInMilliseconds" and greater than 0
+    timeDurationForCheckingAllWindowMinimizedInMilliseconds: 1.5 * 1000,
 
     pageUrl: '',
 
@@ -388,72 +392,65 @@ let timeTrackingSocket = null
 let startTime = null
 
 async function sendTimeTrackingInfo(endTime) {
-    timeTrackingSocket.emit('time-tracking', {
-        startTime: startTime,
-        endTime: endTime,
-        token: await util.getValueFromStorage('token')
-    })
+    if (await util.getValueFromStorage('token')) {
+        timeTrackingSocket.emit('time-tracking', {
+            startTime: startTime,
+            endTime: endTime,
+            token: await util.getValueFromStorage('token')
+        })
+    }
 }
 
 function processTimeTrackingInfo(tabId = null) {
     if (!startTime && tabId) {
         chrome.tabs.get(tabId, function (tab) {
-            if (tab.url.includes('https://www.youtube.com')) {
+            if (tab.url.includes('https://www.linkedin.com')) {
                 startTime = new Date()
-                console.log('Start time set: ', startTime)
             }
         })
     } else if (startTime) {
         const endTime = new Date()
         const timeDuration = endTime.getTime() - startTime.getTime()
-        console.log('Time duration:', timeDuration / 1000, 'Minimum Time duration:', util.minTimeTrackingDurationInMilliseconds / 1000)
 
         if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
-            console.log('Sending time tracking status because duration satisfied')
+
             sendTimeTrackingInfo(endTime)
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
-                    if (tab.url.includes('https://www.youtube.com')) {
+                    if (tab.url.includes('https://www.linkedin.com')) {
                         startTime = endTime
-                        console.log('Start time updated:', startTime)
                     } else {
                         startTime = null
-                        console.log('Start time cleaned because of other tab url')
                     }
                 })
             } else {
                 startTime = null
-                console.log('Start time cleaned because of all window minimized')
             }
         } else {
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
-                    if (!tab.url.includes('https://www.youtube.com')) {
+                    if (!tab.url.includes('https://www.linkedin.com')) {
                         startTime = null
-                        console.log('Start time cleaned because of other tab url')
                     }
                 })
             } else {
                 startTime = null
-                console.log('Start time cleaned because of all window minimized')
             }
         }
     }
 }
 
 async function timeTracker() {
-    timeTrackingSocket = io.connect(util.socketUrl + `token=${await util.getValueFromStorage('token')}&request_from=extension`);
+    timeTrackingSocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}&request_from=extension`);
 
     chrome.windows.onFocusChanged.addListener(function (windowId) {
         if (windowId === -1) {
-            console.log('called for all minimized')
             processTimeTrackingInfo()
         } else {
             chrome.windows.get(windowId, function (chromeWindow) {
                 if (chromeWindow.state === "minimized") {
                 } else {
                     chrome.tabs.query({active: true, windowId: windowId}, function (tabs) {
-                        console.log('called for window focus changed')
                         processTimeTrackingInfo(tabs[0].id)
                     })
                 }
@@ -464,17 +461,51 @@ async function timeTracker() {
 
     // If tab is activated then do below
     chrome.tabs.onActivated.addListener((activeInfo) => {
-        console.log('called for tab activated')
         processTimeTrackingInfo(activeInfo.tabId)
     })
 
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         if (changeInfo.status === 'complete') {
-            console.log('called for tab updated')
             processTimeTrackingInfo(tabId)
         }
     })
-
-
 }
-// timeTracker()
+
+function sendPeriodicTimeTracking() {
+    setTimeout(function () {
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+            if (tabs.length) {
+                processTimeTrackingInfo(tabs[0].id)
+            }
+            sendPeriodicTimeTracking()
+        })
+    }, util.timeTrackingDurationInMilliseconds)
+}
+
+function periodicWindowMinimizeChecking() {
+    setInterval(function () {
+        chrome.windows.getCurrent(function (window) {
+            if (!chrome.runtime.lastError && window) {
+                if (!window.focused && startTime) {
+                    const endTime = new Date()
+                    const timeDuration = endTime.getTime() - startTime.getTime()
+                    if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
+                        sendTimeTrackingInfo(endTime)
+                        startTime = null
+                    }
+                } else if (window.focused) {
+                    chrome.tabs.query({windowId: window.id, active: true}, function (tabs) {
+                        if (tabs.length && tabs[0].url.includes('https://www.linkedin.com')) {
+                            startTime = new Date()
+                        }
+                    })
+                }
+            }
+        })
+    }, util.timeDurationForCheckingAllWindowMinimizedInMilliseconds)
+}
+
+timeTracker()
+sendPeriodicTimeTracking()
+periodicWindowMinimizeChecking()
+
