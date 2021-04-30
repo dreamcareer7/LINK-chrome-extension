@@ -491,8 +491,8 @@ function periodicWindowMinimizeChecking() {
                     startTime = null
                 }
             } else if (window.focused) {
-                chrome.tabs.getCurrent(function (tab) {
-                    if (tab.url.includes('https://www.linkedin.com')) {
+                chrome.tabs.query({windowId: window.id, active: true}, function (tab) {
+                    if (tab[0].url.includes('https://www.linkedin.com')) {
                         startTime = new Date()
                     }
                 })
