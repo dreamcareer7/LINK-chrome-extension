@@ -20,6 +20,9 @@ let util = {
     // Time tracking to send periodic tracking status
     timeTrackingDurationInMilliseconds: 5 * 60 * 1000,
 
+    // This is the time duration for checking if all window has been minimized
+    timeDurationForCheckingAllWindowMinimizedInMilliseconds: 5 * 1000,
+
     pageUrl: '',
 
     /**
@@ -395,8 +398,6 @@ async function sendTimeTrackingInfo(endTime) {
     })
 }
 
-let periodicTimeTracking = null
-
 function processTimeTrackingInfo(tabId = null) {
     if (!startTime && tabId) {
         chrome.tabs.get(tabId, function (tab) {
@@ -436,19 +437,6 @@ function processTimeTrackingInfo(tabId = null) {
     }
 }
 
-function sendPeriodicTimeTracking() {
-    periodicTimeTracking = setTimeout(function () {
-        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-            if (tabs.length) {
-                processTimeTrackingInfo(tabs[0].id)
-            }
-            sendPeriodicTimeTracking()
-        })
-    }, util.timeTrackingDurationInMilliseconds)
-}
-
-sendPeriodicTimeTracking()
-
 async function timeTracker() {
     timeTrackingSocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}&request_from=extension`);
 
@@ -478,8 +466,36 @@ async function timeTracker() {
             processTimeTrackingInfo(tabId)
         }
     })
+}
 
+function sendPeriodicTimeTracking() {
+    setTimeout(function () {
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+            if (tabs.length) {
+                processTimeTrackingInfo(tabs[0].id)
+            }
+            sendPeriodicTimeTracking()
+        })
+    }, util.timeTrackingDurationInMilliseconds)
+}
 
+function periodicWindowMinimizeChecking() {
+    setInterval(function () {
+        chrome.windows.getCurrent(function (window) {
+            console.log(window.focused, startTime)
+            if (!window.focused && startTime) {
+                const endTime = new Date()
+                const timeDuration = endTime.getTime() - startTime.getTime()
+                if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
+                    sendTimeTrackingInfo(endTime)
+                    startTime = null
+                }
+            }
+        })
+    }, 1000)
 }
 
 timeTracker()
+sendPeriodicTimeTracking()
+periodicWindowMinimizeChecking()
+
