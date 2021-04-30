@@ -392,11 +392,13 @@ let timeTrackingSocket = null
 let startTime = null
 
 async function sendTimeTrackingInfo(endTime) {
-    timeTrackingSocket.emit('time-tracking', {
-        startTime: startTime,
-        endTime: endTime,
-        token: await util.getValueFromStorage('token')
-    })
+    if (await util.getValueFromStorage('token')) {
+        timeTrackingSocket.emit('time-tracking', {
+            startTime: startTime,
+            endTime: endTime,
+            token: await util.getValueFromStorage('token')
+        })
+    }
 }
 
 function processTimeTrackingInfo(tabId = null) {
