@@ -18,7 +18,7 @@ let util = {
     minTimeTrackingDurationInMilliseconds: 2 * 1000,
 
     // Time tracking to send periodic tracking status
-    timeTrackingDurationInMilliseconds: 5 * 60 * 1000,
+    timeTrackingDurationInMilliseconds: 60 * 1000,
 
     // This is the time duration for checking if all window has been minimized
     // [ALERT] Please enter value for below key less than "minTimeTrackingDurationInMilliseconds" and greater than 0
@@ -485,19 +485,21 @@ function sendPeriodicTimeTracking() {
 function periodicWindowMinimizeChecking() {
     setInterval(function () {
         chrome.windows.getCurrent(function (window) {
-            if (!window.focused && startTime) {
-                const endTime = new Date()
-                const timeDuration = endTime.getTime() - startTime.getTime()
-                if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
-                    sendTimeTrackingInfo(endTime)
-                    startTime = null
-                }
-            } else if (window.focused) {
-                chrome.tabs.query({windowId: window.id, active: true}, function (tab) {
-                    if (tab[0].url.includes('https://www.linkedin.com')) {
-                        startTime = new Date()
+            if (!chrome.runtime.lastError && window) {
+                if (!window.focused && startTime) {
+                    const endTime = new Date()
+                    const timeDuration = endTime.getTime() - startTime.getTime()
+                    if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
+                        sendTimeTrackingInfo(endTime)
+                        startTime = null
                     }
-                })
+                } else if (window.focused) {
+                    chrome.tabs.query({windowId: window.id, active: true}, function (tabs) {
+                        if (tabs.length && tabs[0].url.includes('https://www.linkedin.com')) {
+                            startTime = new Date()
+                        }
+                    })
+                }
             }
         })
     }, util.timeDurationForCheckingAllWindowMinimizedInMilliseconds)
