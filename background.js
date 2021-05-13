@@ -133,6 +133,7 @@ async function init() {
             } else {
                 chrome.browserAction.setPopup({popup: "loggedIn.html"});
                 window.location.href = "loggedIn.html";
+                timeTracker();
             }
         } else {
             chrome.browserAction.setPopup({popup: "signup.html"});
@@ -221,6 +222,7 @@ async function checkForLinkedIn(tab) {
                 if (queryParams["is"] === '1') {
                     chrome.browserAction.setPopup({popup: "loggedIn.html"});
                     window.location.href = "loggedIn.html";
+                    timeTracker();
                 } else {
                     chrome.browserAction.setPopup({popup: "signup.html"});
                     window.location.href = "signup.html";
@@ -401,7 +403,7 @@ async function sendTimeTrackingInfo(endTime) {
     }
 }
 
-function processTimeTrackingInfo(tabId = null) {
+async function processTimeTrackingInfo(tabId = null) {
     if (!startTime && tabId) {
         chrome.tabs.get(tabId, function (tab) {
             if (tab.url.includes('https://www.linkedin.com')) {
@@ -411,10 +413,9 @@ function processTimeTrackingInfo(tabId = null) {
     } else if (startTime) {
         const endTime = new Date()
         const timeDuration = endTime.getTime() - startTime.getTime()
-
         if (timeDuration > util.minTimeTrackingDurationInMilliseconds) {
 
-            sendTimeTrackingInfo(endTime)
+            await sendTimeTrackingInfo(endTime)
             if (tabId) {
                 chrome.tabs.get(tabId, function (tab) {
                     if (tab.url.includes('https://www.linkedin.com')) {
@@ -441,34 +442,37 @@ function processTimeTrackingInfo(tabId = null) {
 }
 
 async function timeTracker() {
-    timeTrackingSocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}&request_from=extension`);
+    if (await util.getValueFromStorage('token') && !timeTrackingSocket) {
+        timeTrackingSocket = io.connect(util.socketUrl + `?token=${await util.getValueFromStorage('token')}&request_from=extension`);
+        sendPeriodicTimeTracking();
+        periodicWindowMinimizeChecking();
+        chrome.windows.onFocusChanged.addListener(function (windowId) {
+            if (windowId === -1) {
+                processTimeTrackingInfo()
+            } else {
+                chrome.windows.get(windowId, function (chromeWindow) {
+                    if (chromeWindow.state === "minimized") {
+                    } else {
+                        chrome.tabs.query({active: true, windowId: windowId}, function (tabs) {
+                            processTimeTrackingInfo(tabs[0].id)
+                        })
+                    }
+                });
+            }
+        });
 
-    chrome.windows.onFocusChanged.addListener(function (windowId) {
-        if (windowId === -1) {
-            processTimeTrackingInfo()
-        } else {
-            chrome.windows.get(windowId, function (chromeWindow) {
-                if (chromeWindow.state === "minimized") {
-                } else {
-                    chrome.tabs.query({active: true, windowId: windowId}, function (tabs) {
-                        processTimeTrackingInfo(tabs[0].id)
-                    })
-                }
-            });
-        }
-    });
 
+        // If tab is activated then do below
+        chrome.tabs.onActivated.addListener((activeInfo) => {
+            processTimeTrackingInfo(activeInfo.tabId)
+        })
 
-    // If tab is activated then do below
-    chrome.tabs.onActivated.addListener((activeInfo) => {
-        processTimeTrackingInfo(activeInfo.tabId)
-    })
-
-    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-        if (changeInfo.status === 'complete') {
-            processTimeTrackingInfo(tabId)
-        }
-    })
+        chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+            if (changeInfo.status === 'complete') {
+                processTimeTrackingInfo(tabId)
+            }
+        })
+    }
 }
 
 function sendPeriodicTimeTracking() {
@@ -493,10 +497,11 @@ function periodicWindowMinimizeChecking() {
                         await sendTimeTrackingInfo(endTime)
                         startTime = null
                     }
-                } else if (window.focused) {
+                } else if (window.focused && !startTime) {
                     chrome.tabs.query({windowId: window.id, active: true}, function (tabs) {
                         if (tabs.length && tabs[0].url.includes('https://www.linkedin.com')) {
                             startTime = new Date()
+
                         }
                     })
                 }
@@ -506,6 +511,6 @@ function periodicWindowMinimizeChecking() {
 }
 
 timeTracker()
-sendPeriodicTimeTracking()
-periodicWindowMinimizeChecking()
+// sendPeriodicTimeTracking()
+// periodicWindowMinimizeChecking()
 
